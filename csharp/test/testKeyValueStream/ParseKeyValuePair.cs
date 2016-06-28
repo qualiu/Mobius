@@ -56,7 +56,7 @@ namespace testKeyValueStream
         {
             if (needPrintMessage)
             {
-                Log(string.Format("key = {0} , value{1}", kv.Key, TestUtils.ArrayToText(kv.Value)));
+                Log(string.Format("key = {0} , {1}", kv.Key, TestUtils.ArrayToText("value", kv.Value)));
             }
         }
     }

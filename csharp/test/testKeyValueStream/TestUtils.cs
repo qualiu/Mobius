@@ -23,23 +23,23 @@ namespace testKeyValueStream
 
         public static string NowMicro { get { return DateTime.Now.ToString(MicroTimeFormat); } }
 
-        public static string ArrayToText<T>(T[] array, int takeMaxElementCount = 9)
+        public static string ArrayToText<T>(string name, T[] array, int takeMaxElementCount = 9)
         {
             if (array == null)
             {
-                return "[] = null";
+                return string.Format("{0}[] = null", name);
             }
             else if (array.Length == 0)
             {
-                return "[0] = " + array;
+                return string.Format("{0}[0] = {1}", name, array);
             }
             else if (array.Length <= takeMaxElementCount)
             {
-                return "[" + array.Length + "] = " + string.Join(", ", array);
+                return name + "[" + array.Length + "] = " + string.Join(", ", array);
             }
             else
             {
-                return "[" + array.Length + "] = " + string.Join(", ", array.Take(takeMaxElementCount)) + ", ... , " + array.Last();
+                return name + "[" + array.Length + "] = " + string.Join(", ", array.Take(takeMaxElementCount)) + ", ... , " + array.Last();
             }
         }
 
@@ -60,7 +60,7 @@ namespace testKeyValueStream
             throw new ArgumentException("not found type for " + data);
         }
 
-        public static string GetValueText(object value)
+        public static string GetValueText(object value, string name = "")
         {
             if (value == null)
             {
@@ -73,7 +73,7 @@ namespace testKeyValueStream
             }
             else if (value is int[])
             {
-                return TestUtils.ArrayToText((int[])value);
+                return TestUtils.ArrayToText(name, (int[])value);
             }
             else
             {

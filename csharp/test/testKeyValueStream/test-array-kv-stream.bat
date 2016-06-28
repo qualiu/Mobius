@@ -24,9 +24,6 @@ pushd %~dp0\bin\Debug
 set options=--executor-cores 2 --driver-cores 2 --executor-memory 1g --driver-memory 1g
 
 echo on
-::start cmd /k d:\msgit\SourceLinesSocket.exe 9123 100 15 127.0.0.1 60
-::start cmd /k d:\msgit\SourceLinesSocket.exe 9123 100 15 127.0.0.1 60
-::start cmd /c d:\msgit\SourceLinesSocket.exe 9123 100 15 127.0.0.1 60
 %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd %options% --exe testKeyValueStream.exe %CD% %*
 
 popd

@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Spark.CSharp.Core;
-using Microsoft.Spark.CSharp.Streaming;
 
 namespace testKeyValueStream
 {
@@ -19,12 +14,13 @@ namespace testKeyValueStream
     public abstract class SumCountBase : ISumCount
     {
         //protected abstract SumCount sumCount { get; set; } = null;
-        protected SumCount sumCount { get { return GetSumCount(); } }
+        //protected SumCount sumCount { get { return GetSumCount(); } }
 
         public abstract SumCount GetSumCount(); // { throw new Exception("should implement."); }
 
         public void ForeachRDD<V>(double time, RDD<dynamic> rdd)
         {
+            var sumCount = GetSumCount();
             sumCount.RddCount += 1;
             var taken = rdd.Collect();
             Console.WriteLine("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
@@ -33,7 +29,7 @@ namespace testKeyValueStream
             {
                 sumCount.RecordCount += 1;
                 KeyValuePair<string, V> kv = (KeyValuePair<string, V>)record;
-                Console.WriteLine("{0} record: key = {2}, value = {3}, temp sumCount = {4}", TestUtils.NowMilli, record, kv.Key, TestUtils.GetValueText(kv.Value), sumCount);
+                Console.WriteLine("{0} record: key = {1}, {2}, temp sumCount = {3}", TestUtils.NowMilli, kv.Key, TestUtils.GetValueText(kv.Value, "value"), sumCount);
                 sumCount.LineCount += TestUtils.GetFirstElementValue(kv.Value);
             }
 
@@ -42,6 +38,7 @@ namespace testKeyValueStream
 
         public void Reduce<V>(double time, RDD<dynamic> rdd)
         {
+            var sumCount = GetSumCount();
             sumCount.RddCount += 1;
             var taken = rdd.Collect();
             Console.WriteLine("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
@@ -50,7 +47,7 @@ namespace testKeyValueStream
             {
                 sumCount.RecordCount += 1;
                 KeyValuePair<string, V> kv = (KeyValuePair<string, V>)record;
-                Console.WriteLine("{0} record: key = {2}, value = {3}, temp sumCount = {4}", TestUtils.NowMilli, record, kv.Key, TestUtils.GetValueText(kv.Value), sumCount);
+                Console.WriteLine("{0} record: key = {1}, {2}, temp sumCount = {3}", TestUtils.NowMilli, kv.Key, TestUtils.GetValueText(kv.Value, "value"), sumCount);
                 sumCount.LineCount += TestUtils.GetFirstElementValue(kv.Value);
             }
 
@@ -63,34 +60,35 @@ namespace testKeyValueStream
         }
     }
 
-    [Serializable]
-    public class SumCountHelper : SumCountBase
-    {
-        //private new SumCount sumCount { get; set; }
-        private new SumCount sumCount { get; set; }
+    //[Serializable]
+    //public class SumCountHelper : SumCountBase
+    //{
+    //    //private new SumCount sumCount { get; set; }
+    //    private new SumCount sumCount { get; set; }
 
-        public override SumCount GetSumCount() { return this.sumCount; }
+    //    public override SumCount GetSumCount() { return this.sumCount; }
 
-        public SumCountHelper(SumCount sum)
-        {
-            this.sumCount = sum;
-        }
+    //    public SumCountHelper(SumCount sum)
+    //    {
+    //        this.sumCount = sum;
+    //    }
 
-        public SumCountHelper()
-        {
-            this.sumCount = new SumCount(typeof(SumCountHelper).Name);
-        }
-    }
+    //    public SumCountHelper()
+    //    {
+    //        this.sumCount = new SumCount();
+    //    }
+    //}
 
     [Serializable]
     public class SumCountStaticHelper : SumCountBase
     {
-        private static SumCount _SumCount = new SumCount("StaticSum");
-        private new SumCount sumCount { get { return _SumCount; } }
-
-        public override SumCount GetSumCount() { return this.sumCount; }
-
+        private static SumCount _SumCount = new SumCount();
+        //private new SumCount sumCount { get { return _SumCount; } }
         public SumCountStaticHelper() { }
+
+        public override SumCount GetSumCount() { return _SumCount; }
+
+        public static SumCount GetStaticSumCount() { return _SumCount; }
     }
 
 
@@ -100,13 +98,16 @@ namespace testKeyValueStream
         private long _lineCount = 0;
         private long _rddCount = 0;
         private long _recordCount = 0;
-        private readonly string name;
 
-        public SumCount(string nameForDebug = "")
+        public SumCount(long lineCount = 0, long rddCount = 0, long recordCount = 0)
         {
-            this.name = nameForDebug;
+            _lineCount = lineCount;
+            _rddCount = rddCount;
+            _recordCount = recordCount;
         }
-        
+
+        public SumCount(SumCount sum) : this(sum.LineCount, sum.RddCount, sum.RecordCount) { }
+
         public long LineCount
         {
             get { return Interlocked.Read(ref _lineCount); }
@@ -134,7 +135,38 @@ namespace testKeyValueStream
 
         public override string ToString()
         {
-            return string.Format("LineCount = {0}, RddCount = {1}, RecordCount = {2}, name = {3}", LineCount, RddCount, RecordCount, name);
+            return string.Format("LineCount = {0}, RddCount = {1}, RecordCount = {2}", LineCount, RddCount, RecordCount);
         }
+
+        public static SumCount operator -(SumCount s1, SumCount s2) =>
+            new SumCount(s1.LineCount - s2.LineCount, s1.RddCount - s2.RddCount, s1.RecordCount - s2.RecordCount);
+
+        public static SumCount operator +(SumCount s1, SumCount s2) =>
+            new SumCount(s1.LineCount + s2.LineCount, s1.RddCount + s2.RddCount, s1.RecordCount + s2.RecordCount);
+
+        //public static bool operator ==(SumCount s1, SumCount s2)
+        //{
+        //    return s1.LineCount == s2.LineCount && s1.RddCount == s2.RddCount && s1.RecordCount == s2.RecordCount;
+        //}
+        //public static bool operator !=(SumCount s1, SumCount s2)
+        //{
+        //    return !(s1 == s2);
+        //}
+
+        //public override bool Equals(object obj)
+        //{
+        //    var sum = obj as SumCount;
+        //    if ((object)sum == null)
+        //    {
+        //        return false;
+        //    }
+
+        //    return base.Equals(obj) && this == sum;
+        //}
+
+        //public override int GetHashCode()
+        //{
+        //    return base.GetHashCode() ^ (int)(_lineCount + _rddCount + _recordCount);
+        //}
     }
 }

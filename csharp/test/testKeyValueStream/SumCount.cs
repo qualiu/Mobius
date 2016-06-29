@@ -13,9 +13,6 @@ namespace testKeyValueStream
     [Serializable]
     public abstract class SumCountBase : ISumCount
     {
-        //protected abstract SumCount sumCount { get; set; } = null;
-        //protected SumCount sumCount { get { return GetSumCount(); } }
-
         public abstract SumCount GetSumCount(); // { throw new Exception("should implement."); }
 
         public void ForeachRDD<V>(double time, RDD<dynamic> rdd)
@@ -138,11 +135,15 @@ namespace testKeyValueStream
             return string.Format("LineCount = {0}, RddCount = {1}, RecordCount = {2}", LineCount, RddCount, RecordCount);
         }
 
-        public static SumCount operator -(SumCount s1, SumCount s2) =>
-            new SumCount(s1.LineCount - s2.LineCount, s1.RddCount - s2.RddCount, s1.RecordCount - s2.RecordCount);
+        public static SumCount operator -(SumCount s1, SumCount s2)
+        {
+            return new SumCount(s1.LineCount - s2.LineCount, s1.RddCount - s2.RddCount, s1.RecordCount - s2.RecordCount);
+        }
 
-        public static SumCount operator +(SumCount s1, SumCount s2) =>
-            new SumCount(s1.LineCount + s2.LineCount, s1.RddCount + s2.RddCount, s1.RecordCount + s2.RecordCount);
+        public static SumCount operator +(SumCount s1, SumCount s2)
+        {
+            return new SumCount(s1.LineCount + s2.LineCount, s1.RddCount + s2.RddCount, s1.RecordCount + s2.RecordCount);
+        }
 
         //public static bool operator ==(SumCount s1, SumCount s2)
         //{

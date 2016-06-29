@@ -83,15 +83,22 @@
     <None Include="test-array-kv-stream.bat" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Adapter\Microsoft.Spark.CSharp\Adapter.csproj">
+    <ProjectReference Include="..\..\..\csharp\Adapter\Microsoft.Spark.CSharp\Adapter.csproj">
       <Project>{ce999a96-f42b-4e80-b208-709d7f49a77c}</Project>
       <Name>Adapter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\csharp\Worker\Microsoft.Spark.CSharp\Worker.csproj">
+      <Project>{82c9d3b2-e4fb-4713-b980-948c1e96a10a}</Project>
+      <Name>Worker</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">copy /y $(ProjectDir)..\..\Worker\Microsoft.Spark.CSharp\bin\$(ConfigurationName)\CSharpWorker.* $(TargetDir)</PostBuildEvent>
     <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -uv $(ProjectDir)../../Worker/Microsoft.Spark.CSharp/bin/$(ConfigurationName)/CSharpWorker.* $(TargetDir)</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy /y $(ProjectDir)..\..\..\csharp\Worker\Microsoft.Spark.CSharp\bin\$(ConfigurationName)\CSharpWorker.* $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

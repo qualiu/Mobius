@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -21,13 +22,14 @@ namespace SourceLinesSocket
 
         private static int ConnectedTimes = 0;
 
+
         static void Main(string[] args)
         {
             var exeName = Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
 
             var parseOK = false;
-            //var options = ParserByCommandLine.Parse(args, out parseOK);
-            //var options = ParserByFluent.Parse(args, out parseOK);
+            //var Options = ParserByCommandLine.Parse(args, out parseOK);
+            //var Options = ParserByFluent.Parse(args, out parseOK);
             var options = ParserByPowerArgs.Parse(args, out parseOK);
 
             if (!parseOK)
@@ -43,8 +45,8 @@ namespace SourceLinesSocket
             ServerSocket.Listen(10);
 
             var startTime = DateTime.Now;
-            var thread = new Thread(() => { ListenToClient(startTime, options, runningDuration, options.MessagesPerConnection); });
-            thread.IsBackground = true; // options.RunningSeconds > 0;
+            var thread = new Thread(() => { ListenToClient(startTime, options, runningDuration); });
+            thread.IsBackground = true; // Options.RunningSeconds > 0;
             thread.Start();
 
             if (options.RunningSeconds < 1)
@@ -56,7 +58,7 @@ namespace SourceLinesSocket
             var stopTime = runningDuration == TimeSpan.MaxValue ? DateTime.MaxValue : startTime + runningDuration;
 
             Log("expect to stop at " + stopTime.ToString(MilliTimeFormat));
-            //Thread.Sleep(options.RunningSeconds * 1000);
+            //Thread.Sleep(Options.RunningSeconds * 1000);
             Log("passed " + (DateTime.Now - startTime).TotalSeconds + " s, thread id = " + thread.ManagedThreadId + " , state = " + thread.ThreadState + ", isAlive = " + thread.IsAlive);
             //while (DateTime.Now < stopTime)
             //{
@@ -87,14 +89,14 @@ namespace SourceLinesSocket
                 }
             }
 
-            //Thread.Sleep(Math.Max(100, options.SendInterval));
+            //Thread.Sleep(Math.Max(100, Options.SendInterval));
 
-            //if (thread.IsAlive && options.MessagesPerConnection > 0)
+            //if (thread.IsAlive && Options.MessagesPerConnection > 0)
             //{
-            //    Log(string.Format("wait for connection to send {0} lines messages ...", options.MessagesPerConnection));
+            //    Log(string.Format("wait for connection to send {0} lines messages ...", Options.MessagesPerConnection));
             //}
 
-            //while (thread.IsAlive && options.MessagesPerConnection > 0 && totalSent < options.MessagesPerConnection && !options.QuitIfExceededAny)
+            //while (thread.IsAlive && Options.MessagesPerConnection > 0 && totalSent < Options.MessagesPerConnection && !Options.QuitIfExceededAny)
             //{
             //    Thread.Sleep(60);
             //}
@@ -111,7 +113,7 @@ namespace SourceLinesSocket
 
 
 
-        private static void ListenToClient(DateTime startTime, IArgOptions options, TimeSpan runningDuration, int sendPerConnection)
+        private static void ListenToClient(DateTime startTime, IArgOptions options, TimeSpan runningDuration)
         {
             ConnectedTimes++;
             Log("startTime = " + startTime.ToString(MilliTimeFormat) + ", runningDuration = " + runningDuration);
@@ -130,9 +132,13 @@ namespace SourceLinesSocket
             }
 
             var sent = 0;
+            var keys = new HashSet<String>();
             Func<bool> canQuitSending = () =>
             {
-                return sendPerConnection == 0 || sendPerConnection > 0 && sent >= sendPerConnection;
+                return options.MessagesPerConnection == 0
+                || options.MessagesPerConnection > 0 && sent >= options.MessagesPerConnection
+                || options.KeysPerConnection > 0 && keys.Count >= options.KeysPerConnection
+                ;
             };
 
             Action restartListen = () =>
@@ -143,9 +149,7 @@ namespace SourceLinesSocket
                 }
 
                 Thread.Sleep(options.PauseSecondsAtDrop * 1000);
-                //var thread = new Thread(() => { ListenToClient(startTime, options, runningDuration, sendPerConnection); });
-                //thread.Start();
-                ListenToClient(startTime, options, runningDuration, sendPerConnection);
+                ListenToClient(startTime, options, runningDuration);
             };
 
             var needRestart = false;
@@ -155,12 +159,9 @@ namespace SourceLinesSocket
                 var beginConnection = DateTime.Now;
                 while (true)
                 {
-                    if (sendPerConnection > 0 && sent >= sendPerConnection)
+                    if (options.MessagesPerConnection > 0 && sent >= options.MessagesPerConnection)
                     {
-                        if (!options.QuitIfExceededAny)
-                        {
-                            needRestart = true;
-                        }
+                        needRestart = !options.QuitIfExceededAny;
                         break;
                     }
                     else if (IsTimeout)
@@ -176,13 +177,26 @@ namespace SourceLinesSocket
 
                     sent++;
                     TotalSentMessages++;
-                    var message = string.Format("{0} from '{1}' '{2}' {3} times[{4}] send[{5}] to {6}{7}",
-                        DateTime.Now.ToString(MicroTimeFormat), Environment.OSVersion, Environment.MachineName, HostAddress, ConnectedTimes, sent, clientSocket.RemoteEndPoint, Environment.NewLine);
+                    var now = DateTime.Now;
+                    keys.Add(now.ToString(TimeFormat));
+                    if(options.KeysPerConnection > 0 && keys.Count > options.KeysPerConnection)
+                    {
+                        needRestart = !options.QuitIfExceededAny;
+                        break;
+                    }
+                    var message = string.Format("{0} from '{1}' '{2}' {3} times[{4}] send[{5}] keys[{6}] to {7}{8}",
+                        now.ToString(MicroTimeFormat), Environment.OSVersion, Environment.MachineName, HostAddress, ConnectedTimes, 
+                        sent, keys.Count, clientSocket.RemoteEndPoint, Environment.NewLine);
                     Console.Write(message);
                     clientSocket.Send(Encoding.ASCII.GetBytes(message));
                     Thread.Sleep(options.SendInterval);
                 }
-                Log(string.Format("close client : {0} , connection from {1} to {2}, used {3} s", clientSocket.RemoteEndPoint, beginConnection.ToString(MilliTimeFormat), DateTime.Now.ToString(MilliTimeFormat), (DateTime.Now - beginConnection).TotalSeconds));
+
+                Log(string.Format("close client : {0} , connection from {1} to {2}, used {3} s, sent {4} lines, keys = {5}", 
+                    clientSocket.RemoteEndPoint, beginConnection.ToString(MilliTimeFormat), 
+                    DateTime.Now.ToString(MilliTimeFormat), (DateTime.Now - beginConnection).TotalSeconds,
+                    sent, keys.Count
+                    ));
                 clientSocket.Close();
             }
             catch (Exception ex)

@@ -52,6 +52,9 @@ namespace SourceLinesSocket
             [ArgShortcut("n"), ArgDefaultValue(0), ArgDescription("messages per connection : 0 -> no limit")]
             public int MessagesPerConnection { get; set; }
 
+            [ArgShortcut("k"), ArgDefaultValue(0), ArgDescription("key count per connection : 0 -> no limit")]
+            public int KeysPerConnection { get; set; }
+
             [ArgShortcut("q"), ArgDefaultValue(true), ArgDescription("quit if exceeded running duration or sent message count")]
             public bool QuitIfExceededAny { get; set; }
 

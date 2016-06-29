@@ -62,7 +62,7 @@ namespace testKeyValueStream
                     (isValidationOK ? ". Validation OK" : string.Format(". Validation failed : expected = {0}, but line count = {1}", Options.ValidateCount, sum.LineCount));
 
                 Log(string.Format("oldSum = {0}, newSum = {1}, sum = {2}", oldSum, newSum, sum));
-                Log(string.Format("============= End of {0}, start from {1} , used {2} s. total cost {3} s. final sumCount : {4} {5}",
+                Log(string.Format("============= End of {0}, start from {1} , used {2} s. total cost {3} s. Reduced final sumCount : {4} {5}",
                     timesInfo, startTime.ToString(TestUtils.MilliTimeFormat), (DateTime.Now - startTime).TotalSeconds,
                     (DateTime.Now - beginTime).TotalSeconds, sum.ToString(), validationMessage));
 

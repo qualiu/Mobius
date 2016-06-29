@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
 
@@ -36,8 +32,11 @@ namespace SourceLinesSocket
             [Option('r', "runningSeconds", DefaultValue = 3600, HelpText = "running seconds")]
             public int RunningSeconds { get; set; }
 
-            [Option('n', "sendPerConnection", DefaultValue = 0, HelpText = "send message count per connection. 0 = no limit")]
+            [Option('n', "messagesPerConnection", DefaultValue = 0, HelpText = "send message count per connection. 0 = no limit")]
             public int MessagesPerConnection { get; set; }
+
+            [Option('k', "keysPerConnection", DefaultValue = 0, HelpText = "key count per connection. 0 = no limit")]
+            public int KeysPerConnection { get; set; }
 
             [Option('q', "quitIfExceededAny", DefaultValue = true, HelpText = "quit if exceed time or message-count")]
             public bool QuitIfExceededAny { get; set; }

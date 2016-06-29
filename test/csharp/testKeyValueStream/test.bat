@@ -1,4 +1,4 @@
-::@echo off
+@echo off
 setlocal enabledelayedexpansion
 set shellDir=%~dp0
 IF %shellDir:~-1%==\ SET shellDir=%shellDir:~0,-1%
@@ -35,7 +35,7 @@ set Port=9333
 set ValidationLines=60
 call :ExtractArgs %*
 
-start cmd /c "%SourceSocketExe%" -p %Port% -n %ValidationLines%
+start cmd /k "%SourceSocketExe%" -p %Port% -n %ValidationLines%
 
 pushd %ExeDir%
 set options=--executor-cores 2 --driver-cores 2 --executor-memory 1g --driver-memory 1g

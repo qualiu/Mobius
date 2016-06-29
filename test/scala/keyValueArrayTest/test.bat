@@ -37,7 +37,7 @@ set Port=9486
 set ValidationLines=60
 call :ExtractArgs %*
 
-start cmd /c "%SourceSocketExe%" -p %Port% -n %ValidationLines%
+start cmd /k "%SourceSocketExe%" -p %Port% -n %ValidationLines%
 
 call %SPARK_HOME%\bin\spark-submit.cmd --class lzTest.KeyValueArrayTest %lzJar% %AllArgs%
 

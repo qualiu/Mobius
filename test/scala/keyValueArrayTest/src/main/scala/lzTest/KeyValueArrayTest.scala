@@ -32,21 +32,13 @@ object KeyValueArrayTest extends LogBase {
   }
 
   def main(args: Array[String]): Unit = {
-    // val jar = KeyValueArrayTest.getClass().getProtectionDomain().getCodeSource().getLocation().toURI() //.getPath()
     //val jar = new File(KeyValueArrayTest.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
-    //val jarDir = jar.getParentFile.getPath
     ArgParser4J.parse(args)
     log(s"will connect ${Args4JOptions.host}:${Args4JOptions.port}, batchSeconds = ${Args4JOptions.batchSeconds} s, windowSeconds = ${Args4JOptions.windowSeconds} s. slideSeconds = ${Args4JOptions.slideSeconds} s, checkpointDirectory = ${Args4JOptions.checkPointDirectory}, is-array-test = ${Args4JOptions.isArrayValue}")
     if (Args4JOptions.deleteCheckDirectory) {
       TestUtil.tryDelete(new File(Args4JOptions.checkPointDirectory))
     }
     val prefix = KeyValueArrayTest.getClass.getCanonicalName + (if (Args4JOptions.isArrayValue) (if (Args4JOptions.isUnevenArray) "-uneven" else "-even") + "-array" else "-single") + "-"
-    //    var prefix = KeyValueArrayTest.getClass.getCanonicalName
-    //    if(Args4JOptions.isUnevenArray) {
-    //       if(Args4JOptions.isUnevenArray) prefix += "-uneven-array"
-    //       else prefix += "-array"
-    //    } else  prefix += "-single"
-    //    prefix += "-"
     val conf = new SparkConf().setAppName(prefix + "app")
     val sc = new SparkContext(conf)
     val beginTime = new Date()
@@ -76,7 +68,7 @@ object KeyValueArrayTest extends LogBase {
       log(s"stopped ${timesInfo} used time = ${(new Date().getTime - stopBegin.getTime) / 1000} s.")
       log(s"============= end of ${timesInfo}, start from ${TestUtil.MilliFormat.format(startTime)} , used " +
         s"${(new Date().getTime - startTime.getTime) / 1000.0} s. total cost ${(new Date().getTime - beginTime.getTime) / 1000.0} s."
-        + s" sumCount = { ${sumCount} } ${validationMessage}")
+        + s" reduced final sumCount = { ${sumCount} } ${validationMessage}")
 
       if (!isValidateOK) {
         Args4JOptions.print("Trace arg :")
@@ -130,7 +122,6 @@ object KeyValueArrayTest extends LogBase {
     //      val sum = new SumReduceHelper(Args4JOptions.checkArray).forechRDD(rdd, time)
     //      sumCount.setCount(sum)
     //    })
-
 
     reducedStream.foreachRDD((rdd, time) => {
       sumCount.add(0, 1, 0)

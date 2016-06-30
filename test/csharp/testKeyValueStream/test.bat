@@ -95,8 +95,9 @@ start cmd /c %SourceSocketExe% -p 9112 -n 50 -z 30 -q 0 -x 3
 
 D:\msgit\lqmMobius\csharp\test\testKeyValueStream\test.bat 2>&1 | lzmw -it "error|exception|fail|arg|\w*count|value = |(inverseSum)" -e Validation
 
-
-
+cd d:\msgit\lqmMobius\test\csharp\testKeyValueStream\bin\Debug
+d:\msgit\lqmMobius\test\tools\set-sparkCLR-env.bat d:\msgit\lqmMobius
+%SPARKCLR_HOME%\scripts\sparkclr-submit.cmd --exe testKeyValueStream.exe %CD% -c d:\tmp\checkDir -d 1 -p 9112 -r 360 -e 3 -b 1 -w 4 -s 1  2>&1 | lzmw --nt "input args:" -it "error|exception|fail|arg|\w*count|value = |(inverseSum)|END_OF_DATA_SECTION|unexpected valueLength" -e Validation
 
 
 ::=== following are test commands example ==========================================

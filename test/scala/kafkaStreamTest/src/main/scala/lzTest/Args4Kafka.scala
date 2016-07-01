@@ -32,15 +32,16 @@ object ArgParserApacheCLI {
 }
 */
 
-object Args4Socket {
+object Args4Kafka {
   // .Option.'(\w+)'\s*,\s*"(\w+)".*?DefaultValue\s*=\s*(\S+).*?HelpText\s*=\s*"([^"]+)".*?[\r\n]+\s*public (\w+) (\w+).*?[\r\n]+
   // @Option4J(name = "-$1", usage = "$4")
   // var $2 : $5 = $3
-  @Option4J(name = "-H", usage = "host")
-  var host: String = "127.0.0.1"
 
-  @Option4J(name = "-p", usage = "port", required = true)
-  var port: Int = 9111
+  @Option4J(name="-help",usage="print this message")
+  var help : Boolean = false
+
+  @Option4J(name="-h")
+  def setHelp(isHelp : Boolean) { help = isHelp }
 
   @Option4J(name = "-b", usage = "batch seconds")
   var batchSeconds: Int = 1
@@ -66,12 +67,6 @@ object Args4Socket {
   @Option4J(name = "-m", usage = "method name, such as reduceByKeyAndWindow")
   var methodName: String = "reduceByKeyAndWindow"
 
-  @Option4J(name = "-a", usage = "is value type array")
-  var isArrayValue: Boolean = true
-
-  @Option4J(name = "-u", usage = "is uneven array value")
-  var isUnevenArray: Boolean = false
-
   @Option4J(name = "-e", usage = "element count in value array")
   var elementCount: Int = 0 // 1024 * 1024 * 20
 
@@ -84,9 +79,31 @@ object Args4Socket {
   @Option4J(name = "-v", usage = "line count to validate with, ignore if < 0 ")
   var validateCount: Long = -1
 
+  @Option4J(name = "-brokerList", usage = "Kafka metadata.broker.list")
+  var brokerList: String = "localhost:9092"
+
+  @Option4J(name = "-zookeeper", usage = "Zookeeper connection string")
+  var zookeeper: String = "localhost:2181"
+
+  @Option4J(name = "-autoOffset", usage = "auto.offset.reset")
+  var autoOffset: String = "smallest"
+
+  @Option4J(name = "-groupId", usage = "Kafka group id")
+  var groupId: String = "lzKafkaTestGroup"
+
+  @Option4J(name = "-topic", usage = "Kafka topic name", required = true)
+  var topic: String = "test"
+
+  @Option4J(name = "-partition", usage = "Kafka topic partition")
+  var partition: Int = 1
+
+  @Option4J(name = "-fromOffset", usage = "Kafka topic fromOffset")
+  var fromOffset: Long = 0
+
+  @Option4J(name = "-untilOffset", usage = "Kafka topic untilOffset")
+  var untilOffset: Long = 60
+
   def print(header: String = "Parsed arg : "): Unit = {
-    println(s"${header} host = ${host}")
-    println(s"${header} port = ${port}")
     println(s"${header} batchSeconds = ${batchSeconds}")
     println(s"${header} windowSeconds = ${windowSeconds}")
     println(s"${header} slideSeconds = ${slideSeconds}")
@@ -95,27 +112,41 @@ object Args4Socket {
     println(s"${header} checkPointDirectory = ${checkPointDirectory}")
     println(s"${header} deleteCheckDirectory = ${deleteCheckDirectory}")
     println(s"${header} methodName = ${methodName}")
-    println(s"${header} isArrayValue = ${isArrayValue}")
-    println(s"${header} isUnevenArray = ${isUnevenArray}")
     println(s"${header} elementCount = ${elementCount}")
     println(s"${header} saveTxtDirectory = ${saveTxtDirectory}")
     println(s"${header} checkArray = ${checkArray}")
     println(s"${header} validateCount = ${validateCount}")
+
+    println(s"${header} brokerList = ${brokerList}")
+    println(s"${header} zookeeper = ${zookeeper}")
+    println(s"${header} autoOffset = ${autoOffset}")
+    println(s"${header} groupId = ${groupId}")
+    println(s"${header} topic = ${topic}")
+    println(s"${header} partition = ${partition}")
+    println(s"${header} fromOffset = ${fromOffset}")
+    println(s"${header} untilOffset = ${untilOffset}")
   }
 }
 
 object ArgParser4J {
-  val parser = new CmdLineParser(Args4Socket)
+  val parser = new CmdLineParser(Args4Kafka)
 
   def parse(args: Array[String]): Unit = {
     try {
       parser.parseArgument(args.toList.asJava)
-    } catch {
-      case ex: CmdLineException =>
-        println(s"Error parsing args, exception : ${ex.getMessage}")
-        parser.printUsage(System.out)
-        System.exit(1)
     }
-    Args4Socket.print()
+    catch {
+      case e: CmdLineException =>
+        // println(s"Error parsing args, exception : ${ex.getMessage}")
+        val start = e.getMessage().indexOf('"') + 1
+        val end = e.getMessage().lastIndexOf('"')
+        val wrongArgument = e.getMessage().substring(start, end)
+        System.err.println("Unknown argument: " + wrongArgument)
+        System.err.println("ant [options] [target [target2 [target3] ...]]")
+        parser.printUsage(System.out)
+        println()
+        throw e
+    }
+    Args4Kafka.print()
   }
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -9,20 +10,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace testKeyValueStream
+namespace CommonTestUtils
 {
-    public static class TestUtils
+    public class TestUtils : BaseTestUtil<TestUtils>
     {
-        public const string TimeFormat = "yyyy-MM-dd HH:mm:ss";
-        public const string MilliTimeFormat = TimeFormat + ".fff";
-        public const string MicroTimeFormat = MilliTimeFormat + "fff";
-
-        public static string Now { get { return DateTime.Now.ToString(TimeFormat); } }
-
-        public static string NowMilli { get { return DateTime.Now.ToString(MilliTimeFormat); } }
-
-        public static string NowMicro { get { return DateTime.Now.ToString(MicroTimeFormat); } }
-
         public static string ArrayToText<T>(string name, T[] array, int takeMaxElementCount = 9)
         {
             if (array == null)
@@ -35,11 +26,11 @@ namespace testKeyValueStream
             }
             else if (array.Length <= takeMaxElementCount)
             {
-                return name + "[" + array.Length + "] = " + string.Join(", ", array);
+                return string.Format("{0}[{1}] = {2}", name, array.Length, string.Join(", ", array));
             }
             else
             {
-                return name + "[" + array.Length + "] = " + string.Join(", ", array.Take(takeMaxElementCount)) + ", ... , " + array.Last();
+                return string.Format("{0}[{1}] = {2},...,{3}", name, array.Length, string.Join(", ", array.Take(takeMaxElementCount)), array.Last());
             }
         }
 
@@ -116,7 +107,7 @@ namespace testKeyValueStream
                 throw new ArgumentException(string.Format("{0}must set {1} at arg[{2}]", header, argName, index + 1), argName);
             }
         }
-        
+
         public static ArgType GetArgValue<ArgType>(string classType, ref int index, string[] args, string argName, ArgType defaultValue, bool canBeOmitted = true)
         {
             return GetArgValue(ref index, args, argName, defaultValue, canBeOmitted, classType);
@@ -146,6 +137,31 @@ namespace testKeyValueStream
             }
 
             return IPAddress.Parse("127.0.0.1");
+        }
+
+        public static void DeleteDirectory(string dir, bool throwException = false)
+        {
+            try
+            {
+                if (Directory.Exists(dir))
+                {
+                    Directory.Delete(dir, true);
+                    Log("Deleted directory : {0}", dir);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log("Error to delete directory : {0} : {1}", dir, ex.Message);
+                if (throwException)
+                {
+                    throw ex;
+                }
+                else
+                {
+                    Log("Delete directory exception : {0}", ex);
+                }
+            }
         }
     }
 }

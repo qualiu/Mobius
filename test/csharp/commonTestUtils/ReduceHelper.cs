@@ -4,23 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace testKeyValueStream
+namespace CommonTestUtils
 {
     [Serializable]
-    class ReduceHelper : BaseUtil<ReduceHelper>
+    public class ReduceHelper : BaseTestUtilLongClass<ReduceHelper>
     {
-        private readonly bool CheckArray;
+        private readonly bool CheckArrayFirst;
 
-        public ReduceHelper(bool isCheckingBeforeSum)
+        public ReduceHelper(bool checkArrayAtFirst)
         {
-            this.CheckArray = isCheckingBeforeSum;
+            this.CheckArrayFirst = checkArrayAtFirst;
         }
 
         public int[] Sum(int[] a, int[] b)
         {
-            Log(string.Format("SumArray {0} + {1} : checkArray = {2}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b), this.CheckArray));
+            Log("SumArray {0} + {1} : CheckArrayFirst = {2}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b), this.CheckArrayFirst);
 
-            if (this.CheckArray)
+            if (this.CheckArrayFirst)
             {
                 if (a == null || b == null)
                 {
@@ -33,7 +33,7 @@ namespace testKeyValueStream
                 }
             }
 
-            var count = this.CheckArray ? Math.Min(a.Length, b.Length) : a.Length;
+            var count = this.CheckArrayFirst ? Math.Min(a.Length, b.Length) : a.Length;
             var c = new int[count];
             for (var k = 0; k < c.Length; k++)
             {
@@ -45,8 +45,8 @@ namespace testKeyValueStream
 
         public int[] InverseSum(int[] a, int[] b)
         {
-            Log(string.Format("InverseSumArray {0} - {1}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b)));
-            if (this.CheckArray)
+            Log("InverseSumArray {0} - {1}, CheckArrayAtFirst = {2}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b), this.CheckArrayFirst);
+            if (this.CheckArrayFirst)
             {
                 if (a == null || b == null)
                 {
@@ -59,7 +59,7 @@ namespace testKeyValueStream
                 }
             }
 
-            var count = this.CheckArray ? Math.Min(a.Length, b.Length) : a.Length;
+            var count = this.CheckArrayFirst ? Math.Min(a.Length, b.Length) : a.Length;
             var c = new int[count];
             for (var k = 0; k < c.Length; k++)
             {
@@ -67,6 +67,5 @@ namespace testKeyValueStream
             }
             return c;
         }
-
     }
 }

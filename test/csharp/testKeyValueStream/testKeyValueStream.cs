@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CommonTestUtils;
 using Microsoft.Spark.CSharp.Core;
 using Microsoft.Spark.CSharp.Streaming;
 
 namespace testKeyValueStream
 {
     [Serializable]
-    public class testKeyValueStream : BaseUtil<testKeyValueStream>
+    public class testKeyValueStream : BaseTestUtilLongClass<testKeyValueStream>
     {
-        static IArgOptions Options = null;
+        static ArgOptions Options = null;
 
         public static void Main(string[] args)
         {
@@ -17,7 +18,7 @@ namespace testKeyValueStream
 
             var isParseOK = false;
             //Options = ParserByCommandLine.Parse(args, out isParseOK);
-            Options = ParserByPowerArgs.Parse(args, out isParseOK);
+            Options = ArgParser.Parse<ArgOptions>(args, out isParseOK, "-Help");
 
             if (!isParseOK)
             {
@@ -27,9 +28,9 @@ namespace testKeyValueStream
             Log("will connect " + Options.Host + ":" + Options.Port + " batchSeconds = " + Options.BatchSeconds + " s , windowSeconds = " + Options.WindowSeconds + " s, slideSeconds = " + Options.SlideSeconds + " s."
                 + " checkpointDirectory = " + Options.CheckPointDirectory + ", is-array-test = " + Options.IsArrayValue);
 
-            if (Options.NeedDeleteCheckPointDirectory)
+            if (Options.DeleteCheckPointDirectory)
             {
-                DeleteDirectory(Options.CheckPointDirectory);
+                TestUtils.DeleteDirectory(Options.CheckPointDirectory);
             }
 
             var prefix = exeName + (Options.IsArrayValue ? "-array" + (Options.IsUnevenArray ? "-uneven" : "-even") : "-single") + "-";
@@ -61,7 +62,7 @@ namespace testKeyValueStream
                 var validationMessage = Options.ValidateCount <= 0 ? string.Empty :
                     (isValidationOK ? ". Validation OK" : string.Format(". Validation failed : expected = {0}, but line count = {1}", Options.ValidateCount, sum.LineCount));
 
-                Log(string.Format("oldSum = {0}, newSum = {1}, sum = {2}", oldSum, newSum, sum));
+                Log("oldSum = {0}, newSum = {1}, sum = {2}", oldSum, newSum, sum);
                 Log(string.Format("============= End of {0}, start from {1} , used {2} s. total cost {3} s. Reduced final sumCount : {4} {5}",
                     timesInfo, startTime.ToString(TestUtils.MilliTimeFormat), (DateTime.Now - startTime).TotalSeconds,
                     (DateTime.Now - beginTime).TotalSeconds, sum.ToString(), validationMessage));
@@ -84,7 +85,7 @@ namespace testKeyValueStream
         static void StartOneTest(SparkContext sc, DStream<string> lines, long elements, string prefix, string suffix = ".txt")
         {
             var isReduceByKey = Options.IsReduceByKey();
-            Log(string.Format("isReduceByKey = {0}", isReduceByKey));
+            Log("isReduceByKey = {0}", isReduceByKey);
             if (!Options.IsArrayValue)
             {
                 //var pairs = lines.Map(line => new ParseKeyValue(0).Parse(line));
@@ -108,8 +109,8 @@ namespace testKeyValueStream
         {
             Log("ForEachRDD " + title);
             reducedStream.ForeachRDD(new SumCountStaticHelper().ForeachRDD<V>);
-            // reducedStream.ForeachRDD(new SumCountHelper(sumCount).ForeachRDD<V>);
 
+            //reducedStream.ForeachRDD(new SumCountHelper(sumCount).ForeachRDD<V>);
             //reducedStream.ForeachRDD((time, rdd) => new SumCountHelper(sumCount).Execute<V>(time, rdd));
 
             //reducedStream.ForeachRDD((time, rdd) =>
@@ -136,31 +137,15 @@ namespace testKeyValueStream
 
         static int Sum(int a, int b)
         {
-            Log(string.Format("InverseSum : a - b = {0} - {1}", a, b));
+            Log("InverseSum : a - b = {0} - {1}", a, b);
             return a + b;
         }
 
         static int InverseSum(int a, int b)
         {
-            Log(string.Format("InverseSum : a - b = {0} - {1}", a, b));
+            Log("InverseSum : a - b = {0} - {1}", a, b);
             return a - b;
         }
 
-        static void DeleteDirectory(string dir)
-        {
-            try
-            {
-                if (Directory.Exists(dir))
-                {
-                    Directory.Delete(dir, true);
-                    Log(string.Format("Deleted directory : {0}", dir));
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Log(string.Format("Error to delete check point directory : {0} , exception : {1}{2}", dir, Environment.NewLine, ex));
-            }
-        }
     }
 }

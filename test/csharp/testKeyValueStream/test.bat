@@ -25,7 +25,7 @@ set AllArgs=%*
 if "%1" == "" (
     echo No parameter, Usage as following, run : %ExePath%
     call %ExePath%
-    echo Example parameter : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -v 50 -c d:\tmp\checkDir -d 1 
+    echo Example parameters : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -v 50 -c d:\tmp\checkDir -d 1 
     echo Parameters like host, port and validation are according to source socket tool : %SourceSocketExe%
     echo Source socket directory : %SocketCodeDir%
     exit /b 0
@@ -44,7 +44,7 @@ popd
 
 echo ======================================================
 echo More source socket usages just run : %SourceSocketExe%
-echo Test tool usages : %ExePath%
+echo Test tool usages just run : %ExePath%
 
 goto :End
 

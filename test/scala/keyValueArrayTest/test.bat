@@ -43,7 +43,7 @@ call %SPARK_HOME%\bin\spark-submit.cmd --class lzTest.KeyValueArrayTest %lzJar% 
 
 echo ======================================================
 echo More source socket usages just run : %SourceSocketExe%
-echo Test tool Usage : java -jar %lzJar%
+echo Test tool Usage just run : java -jar %lzJar%
 
 goto :End
 

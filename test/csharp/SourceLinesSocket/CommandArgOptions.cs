@@ -1,21 +1,19 @@
 ﻿using System;
 using CommandLine;
 using CommandLine.Text;
+using CommonTestUtils;
 
 namespace SourceLinesSocket
 {
-    public class ParserByCommandLine : BaseUtil<ParserByCommandLine>
+    public class CommandArgOptions : BaseTestUtil<CommandArgOptions>
     {
-        private static IArgOptions Options = new ArgOptions();
-
-        public static IArgOptions Parse(string[] args, out bool parseOK)
+        public static IArgOptions Parse(string[] args, out bool parsedOK)
         {
+            var options = new ArgOptions();
             var parser = new CommandLine.Parser();
-            parseOK = parser.ParseArguments(args, Options);
-            //Log(string.Format("Parsed options = {0}", parser.ToString()));
-            return Options;
+            parsedOK = parser.ParseArguments(args, options);
+            return options;
         }
-
 
         [Serializable]
         public class ArgOptions : IArgOptions
@@ -59,6 +57,4 @@ namespace SourceLinesSocket
             }
         }
     }
-
-
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Spark.CSharp.Core;
 
-namespace testKeyValueStream
+namespace CommonTestUtils
 {
     public interface ISumCount
     {
@@ -11,7 +11,7 @@ namespace testKeyValueStream
     }
 
     [Serializable]
-    public abstract class SumCountBase : ISumCount
+    public abstract class SumCountBase : BaseTestUtil<SumCountBase>, ISumCount
     {
         public abstract SumCount GetSumCount(); // { throw new Exception("should implement."); }
 
@@ -20,47 +20,23 @@ namespace testKeyValueStream
             var sumCount = GetSumCount();
             sumCount.RddCount += 1;
             var taken = rdd.Collect();
-            Console.WriteLine("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
+            //Log("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
 
             foreach (object record in taken)
             {
                 sumCount.RecordCount += 1;
                 KeyValuePair<string, V> kv = (KeyValuePair<string, V>)record;
-                Console.WriteLine("{0} record: key = {1}, {2}, temp sumCount = {3}", TestUtils.NowMilli, kv.Key, TestUtils.GetValueText(kv.Value, "value"), sumCount);
+                Log("record: key = {0}, {1}, temp sumCount : {2}", kv.Key, TestUtils.GetValueText(kv.Value, "value"), sumCount);
                 sumCount.LineCount += TestUtils.GetFirstElementValue(kv.Value);
             }
 
-            Log(string.Format("Execute sumCount : {0}", sumCount));
-        }
-
-        public void Reduce<V>(double time, RDD<dynamic> rdd)
-        {
-            var sumCount = GetSumCount();
-            sumCount.RddCount += 1;
-            var taken = rdd.Collect();
-            Console.WriteLine("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
-
-            foreach (object record in taken)
-            {
-                sumCount.RecordCount += 1;
-                KeyValuePair<string, V> kv = (KeyValuePair<string, V>)record;
-                Console.WriteLine("{0} record: key = {1}, {2}, temp sumCount = {3}", TestUtils.NowMilli, kv.Key, TestUtils.GetValueText(kv.Value, "value"), sumCount);
-                sumCount.LineCount += TestUtils.GetFirstElementValue(kv.Value);
-            }
-
-            Log(string.Format("Execute sumCount : {0}", sumCount));
-        }
-
-        protected void Log(string message)
-        {
-            Console.WriteLine("{0} {1} : {2}", TestUtils.NowMilli, this.GetType().Name, message);
+            Log("ForeachRDD end : sumCount : {0}", sumCount);
         }
     }
 
     //[Serializable]
     //public class SumCountHelper : SumCountBase
     //{
-    //    //private new SumCount sumCount { get; set; }
     //    private new SumCount sumCount { get; set; }
 
     //    public override SumCount GetSumCount() { return this.sumCount; }
@@ -80,7 +56,7 @@ namespace testKeyValueStream
     public class SumCountStaticHelper : SumCountBase
     {
         private static SumCount _SumCount = new SumCount();
-        //private new SumCount sumCount { get { return _SumCount; } }
+
         public SumCountStaticHelper() { }
 
         public override SumCount GetSumCount() { return _SumCount; }

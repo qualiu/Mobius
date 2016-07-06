@@ -16,10 +16,10 @@ set CodeRootDir=%shellDir%\..\..\..
 set CommonToolDir=%shellDir%\..\..\tools
 call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir%
 
-call :CheckExist "SourceSocketExe" %SourceSocketExe%
-call :CheckExist "sparkclr-submit.cmd" %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd
-call :CheckExist "ExePath" %ExePath%
-call :CheckExist "ExeDir" %ExeDir%
+call :CheckExist %SourceSocketExe% "SourceSocketExe"
+call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"
+call :CheckExist %ExePath% "ExePath"
+call :CheckExist %ExeDir% "ExeDir"
 
 set AllArgs=%*
 if "%1" == "" (
@@ -67,13 +67,13 @@ goto :End
 
 
 :CheckExist
-    if not exist %2 (
-        echo Not exist %1 : %2
+    if not exist "%~1" (
+        echo Not exist %2 : %1
         exit /b 1
     )
     
 
-:End
+
     
  
 :: ======== examples ==================================================
@@ -122,3 +122,6 @@ lzmw -c --w1 "$(lzmw -l --wt -T 2 -PIC 2>/dev/null | head -n 1 | awk -F '\t' '{p
 
 :: Kill test process under Cygwin on Windows
 for pid in $(wmic process get processid, name | lzmw -it '^.*testKeyValueStream.exe\s+(\d+).*$' -o '$1' -PAC); do taskkill /f /pid $pid ; done
+
+:End
+

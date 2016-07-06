@@ -9,7 +9,7 @@ if "%1" == "" (
 set MOBIUS_CODE_ROOT=%1
 set OVERWRITE_ENV=%2
 
-call :CheckExist "mobius build tools directory" %MOBIUS_CODE_ROOT%\build\tools
+call :CheckExist %MOBIUS_CODE_ROOT%\build\tools "mobius build tools directory"
 
 for /F "tokens=*" %%d in (' dir /A:D /B %MOBIUS_CODE_ROOT%\build\tools\spark-* ') do set SparkDir=%MOBIUS_CODE_ROOT%\build\tools\%%d
 
@@ -31,10 +31,10 @@ if "%OVERWRITE_ENV%" == "1" (
 goto :End
 
 :CheckExist
-    if not exist %2 (
-        echo Not exist %1 : %2
+    if not exist "%~1" (
+        echo Not exist %2 : %1
         exit /b 1
     )
 
 :End
-    
+

@@ -47,9 +47,9 @@ namespace testKeyValueStream
                 var lines = ssc.SocketTextStream(Options.Host, Options.Port, StorageLevelType.MEMORY_AND_DISK_SER);
 
 
-                var oldSum = new SumCount(SumCountStaticHelper.GetStaticSumCount());
+                var oldSum = new SumCount(SumCountStatic.GetStaticSumCount());
                 StartOneTest(sc, lines, Options.ElementCount, prefix);
-                var newSum = SumCountStaticHelper.GetStaticSumCount();
+                var newSum = SumCountStatic.GetStaticSumCount();
                 // var sum = newSum - oldSum; // newSum maybe same as oldSum
 
                 ssc.Start();
@@ -108,7 +108,7 @@ namespace testKeyValueStream
         public static void ForEachRDD<V>(string title, DStream<KeyValuePair<string, V>> reducedStream, string prefix, string suffix = ".txt")
         {
             Log("ForEachRDD " + title);
-            reducedStream.ForeachRDD(new SumCountStaticHelper().ForeachRDD<V>);
+            reducedStream.ForeachRDD(new SumCountStatic().ForeachRDD<V>);
 
             //reducedStream.ForeachRDD(new SumCountHelper(sumCount).ForeachRDD<V>);
             //reducedStream.ForeachRDD((time, rdd) => new SumCountHelper(sumCount).Execute<V>(time, rdd));

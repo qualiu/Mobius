@@ -67,13 +67,13 @@ goto :End
     
 
 :CheckExist
-    if not exist %1 (
+    if not exist "%~1" (
         echo Not exist %1
         exit /b 1
     )
+    goto :End
 
 
-:End
     
     
 ::| lzmw -it "error^|exception^|fail^|arg^|\w*count\s*="
@@ -83,3 +83,6 @@ goto :End
 :: set AllArgs=-p 9486 -r 30 -b 1 -w 6 -s 2 -v 50 -c d:\tmp\checkDir -d
 
 ::%SPARK_HOME%\bin\spark-submit.cmd --class lzTest.KeyValueArrayTest %lzJar% %AllArgs% 2>&1
+
+:End
+

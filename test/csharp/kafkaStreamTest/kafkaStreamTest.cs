@@ -61,7 +61,7 @@ namespace kafkaStreamTest
                         options.WindowSeconds,
                         options.SlideSeconds);
 
-                    reducedStream.ForeachRDD(new SumCountStaticHelper().ForeachRDD<int[]>);
+                    reducedStream.ForeachRDD(new SumCountStatic().ForeachRDD<int[]>);
 
                     if (!string.IsNullOrWhiteSpace(options.SaveTxtDirectory))
                     {
@@ -78,7 +78,7 @@ namespace kafkaStreamTest
                 streamingContext.AwaitTerminationOrTimeout(options.RunningSeconds * 1000);
             }
 
-            Log("Final sumCount : {0}", SumCountStaticHelper.GetStaticSumCount().ToString());
+            Log("Final sumCount : {0}", SumCountStatic.GetStaticSumCount().ToString());
         }
     }
 }

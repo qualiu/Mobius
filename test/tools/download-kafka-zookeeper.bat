@@ -58,7 +58,7 @@ set KafakaUrl="https://www.apache.org/dist/kafka/0.10.0.0/%KafkaTarName%"
 set KafkaRoot=%SAVE_DIR%\%KafkaName%
 set KafkaBin=bin\windows
 set KafkaBinFull=%KafkaRoot%\%KafkaBin%
-if not exist %SAVE_DIR%\%KafkaTarName% %DownloadTool% %KafakaUrl% %SAVE_DIR%
+if not exist %SAVE_DIR%\%KafkaTarName% call %DownloadTool% %KafakaUrl% %SAVE_DIR%
 if exist %KafkaRoot% (
     if "%OVERWRITE%" == "1"  rd /q /s %KafkaRoot%
 ) else (

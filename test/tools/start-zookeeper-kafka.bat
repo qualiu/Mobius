@@ -10,7 +10,7 @@ set AppDir=%ShellDir%\apps
 dir /A:D /b %ShellDir%\apps\kafka* 2>nul
 if %errorlevel% NEQ 0 ( 
     call %ShellDir%\download-kafka-zookeeper.bat %AppDir% 
-    sleep 2
+    sleep 9
 )
 
 for /F "tokens=*" %%d in (' dir /A:D /B %AppDir%\kafka* ') do set KafkaRoot=%AppDir%\%%d
@@ -21,7 +21,7 @@ echo ========= start zookeeper and Kafka in %KafkaRoot% ======
 pushd %KafkaRoot%
 set KafkaBin=%KafkaRoot%\bin\windows
 start %KafkaBin%\zookeeper-server-start.bat config\zookeeper.properties
-sleep 2
+sleep 9
 start %KafkaBin%\kafka-server-start.bat config\server.properties
 popd
 

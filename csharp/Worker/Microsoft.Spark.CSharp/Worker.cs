@@ -38,7 +38,7 @@ namespace Microsoft.Spark.CSharp
             // can't initialize logger early because in MultiThreadWorker mode, JVM will read C#'s stdout via
             // pipe. When initialize logger, some unwanted info will be flushed to stdout. But we can still
             // use stderr
-            Console.Error.WriteLine("input args: [{0}] SocketWrapper: [{1}]",
+            var debugMessage = string.Format("input args: [{0}] SocketWrapper: [{1}]",
                 string.Join(" ", args), SocketFactory.SocketWrapperType);
 
             if (args.Length != 2)
@@ -56,25 +56,25 @@ namespace Microsoft.Spark.CSharp
                     // than a single thread.
                     RioNative.SetUseThreadPool(true);
                 }
-                
+
                 var multiThreadWorker = new MultiThreadWorker();
-                multiThreadWorker.Run();
+                multiThreadWorker.Run(debugMessage);
             }
             else
             {
-                RunSimpleWorker();
+                RunSimpleWorker(debugMessage);
             }
         }
 
         /// <summary>
         /// The C# worker process is used to execute only one JVM Task. It will exit after the task is finished.
         /// </summary>
-        private static void RunSimpleWorker()
+        private static void RunSimpleWorker(string debugMessage = "")
         {
             try
             {
                 InitializeLogger();
-                logger.LogInfo("RunSimpleWorker ...");
+                logger.LogDebug("RunSimpleWorker ... {0}", debugMessage);
                 PrintFiles();
 
                 int javaPort = int.Parse(Console.ReadLine()); //reading port number written from JVM

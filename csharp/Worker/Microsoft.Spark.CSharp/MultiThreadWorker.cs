@@ -34,7 +34,7 @@ namespace Microsoft.Spark.CSharp
         /// </summary>
         private BlockingCollection<TaskRunner> waitingTaskRunners = new BlockingCollection<TaskRunner>(new ConcurrentQueue<TaskRunner>());
 
-        public void Run()
+        public void Run(string debugMessage="")
         {
             try
             {
@@ -51,7 +51,7 @@ namespace Microsoft.Spark.CSharp
 
                 // can not initialize logger earlier to avoid unwanted stdout ouput 
                 InitializeLogger();
-                logger.LogInfo("Run MultiThreadWorker ...");
+                logger.LogDebug("Run MultiThreadWorker ... {0}", debugMessage);
                 logger.LogDebug("Port number used to pipe in/out data between JVM and CLR {0}", localPort);
                 Worker.PrintFiles();
 

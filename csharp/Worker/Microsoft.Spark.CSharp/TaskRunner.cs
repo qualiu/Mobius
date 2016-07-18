@@ -45,7 +45,7 @@ namespace Microsoft.Spark.CSharp
 
         public void Run()
         {
-            Logger.LogInfo(string.Format("TaskRunner [{0}] is running ...", trId));
+            Logger.LogDebug(string.Format("TaskRunner [{0}] is running ...", trId));
 
             try
             {
@@ -62,7 +62,7 @@ namespace Microsoft.Spark.CSharp
                             {
                                 stop = true;
                                 // wait for server to complete, otherwise server may get 'connection reset' exception
-                                Logger.LogInfo("Sleep 500 millisecond to close socket ...");
+                                Logger.LogDebug("Sleep 500 millisecond to close socket ...");
                                 Thread.Sleep(500);
                             }
                             else if (!socketReuse)
@@ -71,9 +71,9 @@ namespace Microsoft.Spark.CSharp
                                 // wait for server to complete, otherwise server gets 'connection reset' exception
                                 // Use SerDe.ReadBytes() to detect java side has closed socket properly
                                 // ReadBytes() will block until the socket is closed
-                                Logger.LogInfo("waiting JVM side to close socket...");
+                                Logger.LogDebug("waiting JVM side to close socket...");
                                 SerDe.ReadBytes(networkStream);
-                                Logger.LogInfo("JVM side has closed socket");
+                                Logger.LogDebug("JVM side has closed socket");
                             }
                         }
                         else
@@ -87,7 +87,7 @@ namespace Microsoft.Spark.CSharp
             catch (Exception e)
             {
                 stop = true;
-                Logger.LogError(string.Format("TaskRunner [{0}] exeption, will dispose this TaskRunner", trId));
+                Logger.LogError(string.Format("TaskRunner [{0}] exception, will dispose this TaskRunner", trId));
                 Logger.LogException(e);
             }
             finally

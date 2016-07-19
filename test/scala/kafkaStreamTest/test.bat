@@ -1,18 +1,18 @@
 @echo off
 @setlocal enabledelayedexpansion
 
-set shellDir=%~dp0
-if %shellDir:~-1%==\ SET shellDir=%shellDir:~0,-1%
+set ShellDir=%~dp0
+if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 
-set CommonToolDir=%shellDir%\..\..\tools
+set CommonToolDir=%ShellDir%\..\..\tools
 
-set lzJar=%shellDir%\target\KafkaStreamTestOneJar.jar
+set lzJar=%ShellDir%\target\KafkaStreamTestOneJar.jar
 if not exist %lzJar% (
-    pushd %shellDir% && call mvn package & popd
+    pushd %ShellDir% && call mvn package & popd
 )
 
 call :CheckExist %lzJar%
-set CodeRootDir=%shellDir%\..\..\..
+set CodeRootDir=%ShellDir%\..\..\..
 call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir%
 
 call :CheckExist %SourceSocketExe%

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace CommonTestUtils
 {
-    public class TestUtils : BaseTestUtil<TestUtils>
+    public class TestUtils : BaseTestUtilLog<TestUtils>
     {
         public static string ArrayToText<T>(string name, T[] array, int takeMaxElementCount = 9)
         {
@@ -47,8 +47,6 @@ namespace CommonTestUtils
             {
                 return Convert.ToInt64(data);
             }
-
-            throw new ArgumentException("not found type for " + data);
         }
 
         public static string GetValueText(object value, string name = "")
@@ -116,7 +114,6 @@ namespace CommonTestUtils
         public static IPAddress GetHost(bool print = false)
         {
             IPAddress[] ips = Dns.GetHostAddresses(Dns.GetHostName());
-            var ipList = new List<IPAddress>();
             foreach (IPAddress ipa in ips)
             {
                 if (ipa.AddressFamily != AddressFamily.InterNetwork)
@@ -146,20 +143,16 @@ namespace CommonTestUtils
                 if (Directory.Exists(dir))
                 {
                     Directory.Delete(dir, true);
-                    Log("Deleted directory : {0}", dir);
+                    Logger.LogInfo("Deleted directory : {0}", dir);
                 }
 
             }
             catch (Exception ex)
             {
-                Log("Error to delete directory : {0} : {1}", dir, ex.Message);
+                Logger.LogError("Error to delete directory : {0} : {1}", dir, ex.Message);
                 if (throwException)
                 {
                     throw ex;
-                }
-                else
-                {
-                    Log("Delete directory exception : {0}", ex);
                 }
             }
         }

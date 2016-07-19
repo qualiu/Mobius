@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Text.RegularExpressions;
+using log4net;
+using Microsoft.Spark.CSharp.Services;
 
 namespace CommonTestUtils
 {
@@ -28,80 +32,31 @@ namespace CommonTestUtils
 
         public static String UtcNowMicro { get { return DateTime.UtcNow.ToString(MicroDateTimeFormat); } }
 
-        public static void Log(String format, params object[] args)
+        public static String ExePath
         {
-            Console.WriteLine("{0} {1}", GetHeader(), string.Format(format, args));
+            get
+            {
+                // System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+                // Process.GetCurrentProcess().MainModule.FileName;
+                return System.Reflection.Assembly.GetEntryAssembly().Location;
+            }
         }
 
-        public static void Log(String format, object arg0)
-        {
-            Console.WriteLine("{0} {1}", GetHeader(), string.Format(format, arg0));
-        }
-
-        public static void Log(IFormatProvider provider, String format, params object[] args)
-        {
-            Console.WriteLine("{0} {1}", GetHeader(), string.Format(provider, format, args));
-        }
-
-        public static void Log(String format, object arg0, object arg1)
-        {
-            Console.WriteLine("{0} {1}", GetHeader(), string.Format(format, arg0, arg1));
-        }
-
-        public static void Log(String format, object arg0, object arg1, object arg2)
-        {
-            Console.WriteLine("{0} {1}", GetHeader(), string.Format(format, arg0, arg1, arg2));
-        }
-
-        #region for overloading
-        protected static string GetTypeName()
-        {
-            return typeof(ClassName).Name;
-        }
-
-        protected static DateTime GetTimeNow()
-        {
-            return DateTime.Now;
-        }
-
-        protected static string GetTimeFormat()
-        {
-            return MilliDateTimeFormat;
-        }
-
-        protected static string GetHeader()
-        {
-            return string.Format("{0} {1}", GetTimeNow().ToString(GetTimeFormat()), GetTypeName());
-        }
-
-        #endregion
+        public static String ExeName { get { return Path.GetFileName(ExePath); } }
     }
 
     [Serializable]
-    public class BaseTestUtilLongClass<ClassName> : BaseTestUtil<ClassName>
+    public class BaseTestUtilLog<ClassName> : BaseTestUtil<ClassName>
     {
-        protected new static string GetTypeName()
-        {
-            return typeof(ClassName).ToString();
-        }
+        private static Lazy<ILoggerService> _logger = new Lazy<ILoggerService>(() => LoggerServiceFactory.GetLogger(typeof(ClassName)));
+        protected static ILoggerService Logger { get { return _logger.Value; } }
     }
 
     [Serializable]
-    public class BaseTestUtilUtc<ClassName> : BaseTestUtil<ClassName>
+    public class BaseTestUtilLog4Net<ClassName> : BaseTestUtil<ClassName>
     {
-        protected new static DateTime GetTimeNow()
-        {
-            return DateTime.UtcNow;
-        }
-    }
-
-    [Serializable]
-    public class BaseTestUtilLongClassUtc<ClassName> : BaseTestUtilLongClass<ClassName>
-    {
-        protected new static DateTime GetTimeNow()
-        {
-            return DateTime.UtcNow;
-        }
+        private static Lazy<ILog> _logger = new Lazy<ILog>(() => LogManager.GetLogger(typeof(ClassName)));
+        protected static ILog Logger { get { return _logger.Value; } }
     }
 
     [Serializable]

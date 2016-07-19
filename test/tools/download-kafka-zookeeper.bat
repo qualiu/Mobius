@@ -39,12 +39,7 @@ set WGetTool=%ShellDir%\wget.exe
 set DownloadTool=%ShellDir%\download-file.bat
 call :CheckExist %DownloadTool% "download-file.bat"
 
-icacls %TarTool% /grant %USERNAME%:RX
-icacls %WGetTool% /grant %USERNAME%:RX
-
-call :CheckExist %ShellDir%\download-common-tools.bat ""
-call %ShellDir%\download-common-tools.bat
-
+icacls %ShellDir%\*.exe /grant Everyone:RX
 
 set PATH=%PATH%;%ShellDir%
 

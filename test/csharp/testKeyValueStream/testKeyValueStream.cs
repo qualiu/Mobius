@@ -8,14 +8,14 @@ using Microsoft.Spark.CSharp.Streaming;
 namespace testKeyValueStream
 {
     [Serializable]
-    public class testKeyValueStream : BaseTestUtilLongClass<testKeyValueStream>
+    public class testKeyValueStream : BaseTestUtilLog<testKeyValueStream>
     {
-        static ArgOptions Options = null;
+        private static ArgOptions Options = null;
 
         public static void Main(string[] args)
         {
-            var exeName = Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-
+            var config = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
+            Logger.LogDebug("{0} logger configuration {1}", File.Exists(config) ? "Exist" : "Not Exist", config);
             var isParseOK = false;
             //Options = ParserByCommandLine.Parse(args, out isParseOK);
             Options = ArgParser.Parse<ArgOptions>(args, out isParseOK, "-Help");
@@ -25,7 +25,7 @@ namespace testKeyValueStream
                 return;
             }
 
-            Log("will connect " + Options.Host + ":" + Options.Port + " batchSeconds = " + Options.BatchSeconds + " s , windowSeconds = " + Options.WindowSeconds + " s, slideSeconds = " + Options.SlideSeconds + " s."
+            Logger.LogInfo("will connect " + Options.Host + ":" + Options.Port + " batchSeconds = " + Options.BatchSeconds + " s , windowSeconds = " + Options.WindowSeconds + " s, slideSeconds = " + Options.SlideSeconds + " s."
                 + " checkpointDirectory = " + Options.CheckPointDirectory + ", is-array-test = " + Options.IsArrayValue);
 
             if (Options.DeleteCheckPointDirectory)
@@ -33,7 +33,7 @@ namespace testKeyValueStream
                 TestUtils.DeleteDirectory(Options.CheckPointDirectory);
             }
 
-            var prefix = exeName + (Options.IsArrayValue ? "-array" + (Options.IsUnevenArray ? "-uneven" : "-even") : "-single") + "-";
+            var prefix = ExeName + (Options.IsArrayValue ? "-array" + (Options.IsUnevenArray ? "-uneven" : "-even") : "-single") + "-";
             var sc = new SparkContext(new SparkConf().SetAppName(prefix));
 
             var beginTime = DateTime.Now;
@@ -41,7 +41,7 @@ namespace testKeyValueStream
             Action<long> testOneStreaming = (testTime) =>
             {
                 var timesInfo = " test[" + testTime + "]-" + Options.TestTimes + " ";
-                Log("============== Begin of " + timesInfo + " =========================");
+                Logger.LogInfo("============== Begin of " + timesInfo + " =========================");
                 var ssc = new StreamingContext(sc, Options.BatchSeconds);
                 ssc.Checkpoint(Options.CheckPointDirectory);
                 var lines = ssc.SocketTextStream(Options.Host, Options.Port, StorageLevelType.MEMORY_AND_DISK_SER);
@@ -62,14 +62,14 @@ namespace testKeyValueStream
                 var validationMessage = Options.ValidateCount <= 0 ? string.Empty :
                     (isValidationOK ? ". Validation OK" : string.Format(". Validation failed : expected = {0}, but line count = {1}", Options.ValidateCount, sum.LineCount));
 
-                Log("oldSum = {0}, newSum = {1}, sum = {2}", oldSum, newSum, sum);
-                Log(string.Format("============= End of {0}, start from {1} , used {2} s. total cost {3} s. Reduced final sumCount : {4} {5}",
+                Logger.LogInfo("oldSum = {0}, newSum = {1}, sum = {2}", oldSum, newSum, sum);
+                Logger.LogInfo("============= End of {0}, start from {1} , used {2} s. total cost {3} s. Reduced final sumCount : {4} {5}",
                     timesInfo, startTime.ToString(TestUtils.MilliTimeFormat), (DateTime.Now - startTime).TotalSeconds,
-                    (DateTime.Now - beginTime).TotalSeconds, sum.ToString(), validationMessage));
+                    (DateTime.Now - beginTime).TotalSeconds, sum.ToString(), validationMessage);
 
                 if (!isValidationOK)
                 {
-                    Options.OutArgs((name, value) => Console.WriteLine("Trace arg : {0} = {1}", name, value));
+                    Options.OutArgs((name, value) => Logger.LogInfo("Trace arg : {0} = {1}", name, value));
                     throw new Exception(validationMessage);
                 }
             };
@@ -79,13 +79,13 @@ namespace testKeyValueStream
                 testOneStreaming(times + 1);
             }
 
-            Log("finished all test , total test times = " + Options.TestTimes + ", used time = " + (DateTime.Now - beginTime));
+            Logger.LogInfo("finished all test , total test times = " + Options.TestTimes + ", used time = " + (DateTime.Now - beginTime));
         }
 
         static void StartOneTest(SparkContext sc, DStream<string> lines, long elements, string prefix, string suffix = ".txt")
         {
             var isReduceByKey = Options.IsReduceByKey();
-            Log("isReduceByKey = {0}", isReduceByKey);
+            Logger.LogDebug("isReduceByKey = {0}", isReduceByKey);
             if (!Options.IsArrayValue)
             {
                 //var pairs = lines.Map(line => new ParseKeyValue(0).Parse(line));
@@ -107,7 +107,7 @@ namespace testKeyValueStream
 
         public static void ForEachRDD<V>(string title, DStream<KeyValuePair<string, V>> reducedStream, string prefix, string suffix = ".txt")
         {
-            Log("ForEachRDD " + title);
+            Logger.LogDebug("ForEachRDD " + title);
             reducedStream.ForeachRDD(new SumCountStatic().ForeachRDD<V>);
 
             //reducedStream.ForeachRDD(new SumCountHelper(sumCount).ForeachRDD<V>);
@@ -137,13 +137,13 @@ namespace testKeyValueStream
 
         static int Sum(int a, int b)
         {
-            Log("InverseSum : a - b = {0} - {1}", a, b);
+            Logger.LogDebug("InverseSum : a - b = {0} - {1}", a, b);
             return a + b;
         }
 
         static int InverseSum(int a, int b)
         {
-            Log("InverseSum : a - b = {0} - {1}", a, b);
+            Logger.LogDebug("InverseSum : a - b = {0} - {1}", a, b);
             return a - b;
         }
 

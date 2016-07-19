@@ -1,17 +1,17 @@
 @echo off
 @setlocal enabledelayedexpansion
 
-set shellDir=%~dp0
-if %shellDir:~-1%==\ SET shellDir=%shellDir:~0,-1%
+set ShellDir=%~dp0
+if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 
-set CommonToolDir=%shellDir%\..\..\tools
+set CommonToolDir=%ShellDir%\..\..\tools
 
-set SocketCodeDir=%shellDir%\..\..\csharp\SourceLinesSocket
+set SocketCodeDir=%ShellDir%\..\..\csharp\SourceLinesSocket
 for /f %%g in (' for /R %SocketCodeDir%  %%f in ^(*.exe^) do @echo %%f ^| findstr /I /C:vshost /V ^| findstr /I /C:obj /V ') do set SourceSocketExe=%%g
 
-set lzJar=%shellDir%\target\KeyValueArrayTestOneJar.jar
+set lzJar=%ShellDir%\target\KeyValueArrayTestOneJar.jar
 if not exist %lzJar% (
-    pushd %shellDir% && call mvn package & popd
+    pushd %ShellDir% && call mvn package & popd
 )
 
 call :CheckExist %lzJar%
@@ -26,7 +26,7 @@ if "%1" == "" (
     exit /b 0
 )
 
-set CodeRootDir=%shellDir%\..\..\..
+set CodeRootDir=%ShellDir%\..\..\..
 call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir%
 
 call :CheckExist %SourceSocketExe%

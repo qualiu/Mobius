@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PowerArgs, Version=2.7.1.0, Culture=neutral, PublicKeyToken=26a276264bbd55b8, processorArchitecture=MSIL">
       <HintPath>..\packages\PowerArgs.2.7.1.0\lib\net45\PowerArgs.dll</HintPath>
       <Private>True</Private>
@@ -47,6 +51,7 @@
   <ItemGroup>
     <Compile Include="ArgParsing.cs" />
     <Compile Include="BaseTestUtil.cs" />
+    <Compile Include="KafkaUserIdCountTime.cs" />
     <Compile Include="ParseKeyValuePair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReduceHelper.cs" />

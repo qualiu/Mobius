@@ -9,11 +9,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using CommonTestUtils;
+using log4net;
 
 namespace SourceLinesSocket
 {
     class SourceLinesSocket : BaseTestUtil<SourceLinesSocket>
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(SourceLinesSocket));
+
         private static Socket ServerSocket;
         private static IPAddress HostAddress;
 
@@ -26,8 +29,6 @@ namespace SourceLinesSocket
 
         static void Main(string[] args)
         {
-            var exeName = Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-
             var parsedOK = false;
             //var options = ParserByCommandLine.Parse(args, out parseOK);
             //var options = ParserByFluent.Parse(args, out parseOK);
@@ -55,11 +56,10 @@ namespace SourceLinesSocket
                 return;
             }
 
-            var process = Process.GetCurrentProcess();
             var stopTime = runningDuration == TimeSpan.MaxValue ? DateTime.MaxValue : startTime + runningDuration;
 
-            Log("expect to stop at " + stopTime.ToString(MilliTimeFormat));
-            Log("passed " + (DateTime.Now - startTime).TotalSeconds + " s, thread id = " + thread.ManagedThreadId + " , state = " + thread.ThreadState + ", isAlive = " + thread.IsAlive);
+            Logger.InfoFormat("expect to stop at " + stopTime.ToString(MilliTimeFormat));
+            Logger.InfoFormat("passed " + (DateTime.Now - startTime).TotalSeconds + " s, thread id = " + thread.ManagedThreadId + " , state = " + thread.ThreadState + ", isAlive = " + thread.IsAlive);
 
             var interval = Math.Max(60, options.SendInterval);
             while (true)
@@ -83,38 +83,29 @@ namespace SourceLinesSocket
                 }
             }
 
-            Log("finished, passed " + (DateTime.Now - startTime).TotalSeconds + " s, thread id = " + thread.ManagedThreadId + " , state = " + thread.ThreadState + ", isAlive = " + thread.IsAlive);
+            Logger.InfoFormat("finished, passed " + (DateTime.Now - startTime).TotalSeconds + " s, thread id = " + thread.ManagedThreadId + " , state = " + thread.ThreadState + ", isAlive = " + thread.IsAlive);
         }
-
-
-
+        
         private static void ListenToClient(DateTime startTime, IArgOptions options, TimeSpan runningDuration)
         {
             ConnectedTimes++;
-            Log("startTime = " + startTime.ToString(MilliTimeFormat) + ", runningDuration = " + runningDuration);
+            Logger.DebugFormat("startTime = " + startTime.ToString(MilliTimeFormat) + ", runningDuration = " + runningDuration);
             var stopTime = runningDuration == TimeSpan.MaxValue ? DateTime.MaxValue : startTime + runningDuration;
             var stopTimeText = runningDuration == TimeSpan.MaxValue ? "endless" : (startTime + runningDuration).ToString(MilliTimeFormat);
             if (DateTime.Now - startTime > runningDuration)
             {
-                Log("Not running. start from " + startTime.ToString(MilliTimeFormat) + " , running for " + runningDuration);
+                Logger.InfoFormat("Not to run. start from " + startTime.ToString(MilliTimeFormat) + " , running for " + runningDuration);
                 return;
             }
             else
             {
-                Log("Machine = " + Environment.MachineName + ", OS = " + Environment.OSVersion
+                Logger.InfoFormat("Machine = " + Environment.MachineName + ", OS = " + Environment.OSVersion
                     + ", start listening " + ServerSocket.LocalEndPoint.ToString()
                     + (runningDuration == TimeSpan.MaxValue ? "\t running endless " : "\t expect to stop at " + stopTimeText));
             }
 
             var sent = 0;
             var keys = new HashSet<String>();
-            Func<bool> canQuitSending = () =>
-            {
-                return options.MessagesPerConnection == 0
-                || options.MessagesPerConnection > 0 && sent >= options.MessagesPerConnection
-                || options.KeysPerConnection > 0 && keys.Count >= options.KeysPerConnection
-                ;
-            };
 
             Action restartListen = () =>
             {
@@ -146,14 +137,14 @@ namespace SourceLinesSocket
 
                     if (DateTime.Now - startTime > runningDuration)
                     {
-                        Log("Stop running. start from " + startTime.ToString(MilliTimeFormat) + " , running for " + runningDuration);
+                        Logger.InfoFormat("Stop running. start from " + startTime.ToString(MilliTimeFormat) + " , running for " + runningDuration);
                         break;
                     }
 
                     sent++;
                     TotalSentMessages++;
                     var now = DateTime.Now;
-                    keys.Add(now.ToString(TimeFormat));
+                    keys.Add(now.ToString(DateTimeFormat));
                     if (options.KeysPerConnection > 0 && keys.Count > options.KeysPerConnection)
                     {
                         needRestart = !options.QuitIfExceededAny;
@@ -167,11 +158,11 @@ namespace SourceLinesSocket
                     Thread.Sleep(options.SendInterval);
                 }
 
-                Log(string.Format("close client : {0} , connection from {1} to {2}, used {3} s, sent {4} lines, keys = {5}",
+                Logger.InfoFormat("close client : {0} , connection from {1} to {2}, used {3} s, sent {4} lines, keys = {5}",
                     clientSocket.RemoteEndPoint, beginConnection.ToString(MilliTimeFormat),
                     DateTime.Now.ToString(MilliTimeFormat), (DateTime.Now - beginConnection).TotalSeconds,
                     sent, keys.Count
-                    ));
+                    );
                 clientSocket.Close();
             }
             catch (Exception ex)

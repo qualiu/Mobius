@@ -1,7 +1,7 @@
 @setlocal
-@set shellDir=%~dp0
-@IF %shellDir:~-1%==\ SET shellDir=%shellDir:~0,-1%
+@set ShellDir=%~dp0
+@IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 
-pushd %shellDir%\csharp && call Build.cmd & popd
+pushd %ShellDir%\csharp && call Build.cmd & popd
 
-pushd %shellDir%\scala && call Build.cmd & popd
+pushd %ShellDir%\scala && call Build.cmd & popd

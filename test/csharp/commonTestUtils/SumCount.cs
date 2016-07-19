@@ -9,7 +9,7 @@ namespace CommonTestUtils
 {
 
     [Serializable]
-    public class SumCount : BaseTestUtil<SumCount>
+    public class SumCount : BaseTestUtilLog<SumCount>
     {
         private ConcurrentDictionary<string, byte> keySet { get; set; }
         protected long lineCount = 0;
@@ -50,18 +50,18 @@ namespace CommonTestUtils
         {
             RddCount += 1;
             var taken = rdd.Collect();
-            //Log("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
+            //Logger.LogDebug("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
 
             foreach (object record in taken)
             {
                 RecordCount += 1;
                 KeyValuePair<string, V> kv = (KeyValuePair<string, V>)record;
-                Log("record: key = {0}, {1}, temp sumCount : {2}", kv.Key, TestUtils.GetValueText(kv.Value, "value"), this.ToString());
+                Logger.LogDebug("record: key = {0}, {1}, temp sumCount : {2}", kv.Key, TestUtils.GetValueText(kv.Value, "value"), this.ToString());
                 LineCount += TestUtils.GetFirstElementValue(kv.Value);
                 AddKey(kv.Key);
             }
 
-            Log("ForeachRDD end : sumCount : {0}", this.ToString());
+            Logger.LogDebug("ForeachRDD end : sumCount : {0}", this.ToString());
         }
 
         public SumCount(long lineCount = 0, long rddCount = 0, long recordCount = 0, IEnumerable<string> keySet = null)
@@ -106,7 +106,7 @@ namespace CommonTestUtils
     }
 
     [Serializable]
-    public class SumCountStatic : BaseTestUtil<SumCountStatic>
+    public class SumCountStatic : BaseTestUtilLog<SumCountStatic>
     {
         private static SumCount _SumCountKeys = new SumCount();
 

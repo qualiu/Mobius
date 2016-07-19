@@ -11,7 +11,7 @@ namespace CommonTestUtils
     /// </summary>
     /// <typeparam name="ValueType"></typeparam>
     [Serializable]
-    public abstract class ParseKeyValuePairBase<ValueType> : BaseTestUtilLongClass<ParseKeyValuePairBase<ValueType>>
+    public abstract class ParseKeyValuePairBase<ValueType> : BaseTestUtilLog<ParseKeyValuePairBase<ValueType>>
     {
         private static long LineCount = 0;
 
@@ -29,7 +29,7 @@ namespace CommonTestUtils
         {
             //Console.WriteLine("{0} {1} : {2}", TestUtils.NowMilli, this.GetType().Name, message);
             //Console.WriteLine("{0} {1}-V[{2}] : {3}", TestUtils.NowMilli, this.GetType().Name, valueArrayElements, message);
-            Console.WriteLine("{0} {1} Line[{2}] : {3}", TestUtils.NowMilli, this.GetType().Name, ++LineCount, message);
+            Logger.LogDebug("{0} {1} Line[{2}] : {3}", TestUtils.NowMilli, this.GetType().Name, ++LineCount, message);
         }
 
         public virtual KeyValuePair<string, ValueType> Parse(string line)
@@ -42,7 +42,7 @@ namespace CommonTestUtils
             var match = Regex.Match(line, @"^(?<Key>[\d-]+ [\d:]+)\.(?<Value>\d+)");
             var key = match.Groups["Key"].Value;
             var valueSet = Regex.Matches(match.Groups["Value"].Value, @"\d");
-            if(elements == 0)
+            if (elements == 0)
             {
                 elements = valueSet.Count;
             }
@@ -60,7 +60,7 @@ namespace CommonTestUtils
         {
             if (needPrintMessage)
             {
-                Log("key = {0} , {1}", kv.Key, TestUtils.ArrayToText("value", kv.Value));
+                Logger.LogDebug("key = {0} , {1}", kv.Key, TestUtils.ArrayToText("value", kv.Value));
             }
         }
     }

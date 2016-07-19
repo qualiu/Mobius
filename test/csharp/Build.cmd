@@ -1,13 +1,24 @@
 @setlocal
 @ECHO off
 
-SET CMDHOME=%~dp0
+SET ShellDir=%~dp0
 @REM Remove trailing backslash \
-set CMDHOME=%CMDHOME:~0,-1%
+set ShellDir=%ShellDir:~0,-1%
+
+set CodeRoot=%ShellDir%\..\..
+set RioCodeDir=%CodeRoot%\cpp
+
+if exist %RioCodeDir% xcopy /y /i /s %RioCodeDir% %ShellDir%\..\cpp
 
 @REM Set msbuild location.
-SET VisualStudioVersion=12.0
+SET VisualStudioVersion=14.0
+if EXIST "%VS140COMNTOOLS%" SET VisualStudioVersion=14.0
 
+@REM Set Build OS
+SET CppDll=HasCpp
+SET VCBuildTool="%VS120COMNTOOLS:~0,-14%VC\bin\cl.exe"
+if EXIST "%VS140COMNTOOLS%" SET VCBuildTool="%VS140COMNTOOLS:~0,-14%VC\bin\cl.exe"
+if NOT EXIST %VCBuildTool% SET CppDll=NoCpp
 SET MSBUILDEXEDIR=%programfiles(x86)%\MSBuild\%VisualStudioVersion%\Bin
 if NOT EXIST "%MSBUILDEXEDIR%\." SET MSBUILDEXEDIR=%programfiles%\MSBuild\%VisualStudioVersion%\Bin
 if NOT EXIST "%MSBUILDEXEDIR%\." GOTO :ErrorMSBUILD
@@ -17,11 +28,11 @@ SET MSBUILDOPT=/verbosity:minimal
 
 if "%builduri%" == "" set builduri=Build.cmd
 
-cd "%CMDHOME%"
+cd "%ShellDir%"
 @cd
 
 set PROJ_NAME=allSubmitingTest
-set PROJ=%CMDHOME%\%PROJ_NAME%.sln
+set PROJ=%ShellDir%\%PROJ_NAME%.sln
 
 @echo ===== Building %PROJ% =====
 
@@ -39,7 +50,7 @@ SET CONFIGURATION=%STEP%
 
 SET STEP=%CONFIGURATION%
 
-"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION% %MSBUILDOPT% "%PROJ%"
+"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION%;AllowUnsafeBlocks=true %MSBUILDOPT% "%PROJ%"
 @if ERRORLEVEL 1 GOTO :ErrorStop
 @echo BUILD ok for %CONFIGURATION% %PROJ%
 
@@ -48,7 +59,7 @@ SET STEP=Release
 
 SET CONFIGURATION=%STEP%
 
-"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION% %MSBUILDOPT% "%PROJ%"
+"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION%;AllowUnsafeBlocks=true %MSBUILDOPT% "%PROJ%"
 @if ERRORLEVEL 1 GOTO :ErrorStop
 @echo BUILD ok for %CONFIGURATION% %PROJ%
 
@@ -56,7 +67,7 @@ if EXIST %PROJ_NAME%.nuspec (
   @echo ===== Build NuGet package for %PROJ% =====
   SET STEP=NuGet-Pack
 
-  powershell -f %CMDHOME%\..\build\localmode\nugetpack.ps1
+  powershell -f %ShellDir%\..\build\localmode\nugetpack.ps1
   @if ERRORLEVEL 1 GOTO :ErrorStop
   @echo NuGet package ok for %PROJ%
 )

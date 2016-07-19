@@ -23,7 +23,7 @@ call %KafkaBin%\kafka-topics.bat --create --zookeeper %ZookeeperConnection% --re
 call %KafkaBin%\kafka-topics.bat --zookeeper %ZookeeperConnection% --list
 call %KafkaBin%\kafka-console-producer.bat --broker-list %KafkaBrokerConnection% --topic %TopicName% < %InitTopicDataFile%
 call %KafkaBin%\kafka-topics.bat --describe --zookeeper %ZookeeperConnection% --topic %TopicName%
-echo for test : %KafkaBin%\kafka-console-consumer --zookeeper %ZookeeperConnection% -from-beginning --topic %TopicName%
+echo for test : %KafkaBin%\kafka-console-consumer --zookeeper %ZookeeperConnection% --from-beginning --topic %TopicName%
 
 goto :End
 

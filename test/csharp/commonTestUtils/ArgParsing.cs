@@ -7,7 +7,7 @@ using PowerArgs;
 
 namespace CommonTestUtils
 {
-    public class ArgParser : BaseTestUtil<ArgParser>
+    public class ArgParser : BaseTestUtilLog<ArgParser>
     {
         public static TPowerArgs Parse<TPowerArgs>(string[] args, out bool parseOK, string help = "-h")
             where TPowerArgs : class, new()
@@ -34,7 +34,7 @@ namespace CommonTestUtils
                 {
                     parseOK = true;
                     var argCount = 0;
-                    options.OutArgs((name, value) => Log("args[{0}] : {1} = {2}", ++argCount, name, value));
+                    options.OutArgs((name, value) => Logger.LogDebug("args[{0}] : {1} = {2}", ++argCount, name, value));
                 }
             }
             catch (Exception ex)

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CommonTestUtils
 {
     [Serializable]
-    public class ReduceHelper : BaseTestUtilLongClass<ReduceHelper>
+    public class ReduceHelper : BaseTestUtilLog<ReduceHelper>
     {
         private readonly bool CheckArrayFirst;
 
@@ -18,7 +18,7 @@ namespace CommonTestUtils
 
         public int[] Sum(int[] a, int[] b)
         {
-            Log("SumArray {0} + {1} : CheckArrayFirst = {2}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b), this.CheckArrayFirst);
+            Logger.LogDebug("SumArray {0} + {1} : CheckArrayFirst = {2}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b), this.CheckArrayFirst);
 
             if (this.CheckArrayFirst)
             {
@@ -45,7 +45,7 @@ namespace CommonTestUtils
 
         public int[] InverseSum(int[] a, int[] b)
         {
-            Log("InverseSumArray {0} - {1}, CheckArrayAtFirst = {2}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b), this.CheckArrayFirst);
+            Logger.LogDebug("InverseSumArray {0} - {1}, CheckArrayAtFirst = {2}", TestUtils.ArrayToText("a", a), TestUtils.ArrayToText("b", b), this.CheckArrayFirst);
             if (this.CheckArrayFirst)
             {
                 if (a == null || b == null)

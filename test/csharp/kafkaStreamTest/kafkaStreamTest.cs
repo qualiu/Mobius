@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using CommonTestUtils;
 using Microsoft.Spark.CSharp.Core;
@@ -7,78 +9,59 @@ using Microsoft.Spark.CSharp.Streaming;
 
 namespace kafkaStreamTest
 {
-    class kafkaStreamTest : BaseTestUtil<kafkaStreamTest>
+    class kafkaStreamTest : BaseTestUtilLog<kafkaStreamTest>
     {
+        private static List<Type> TestClasses = new List<Type> {
+                typeof(WindowSlideTest),
+                typeof(UnionTopicTest)
+            };
+
         static void Main(string[] args)
         {
-            var parsedOK = false;
-            var options = ArgParser.Parse<ArgOptions>(args, out parsedOK);
-            if (!parsedOK)
+            var config = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
+            Logger.LogInfo("{0} logger configuration {1}", File.Exists(config) ? "Exist" : "Not Exist", config);
+
+            if (args.Length < 1 || args[0] == "-h" || args[0] == "--help")
             {
+                ShowUsage();
                 return;
             }
 
-            if (options.DeleteCheckPointDirectory)
+            var className = args[0];
+            var type = TestClasses.Find(tp => tp.Name.Equals(className, StringComparison.OrdinalIgnoreCase));
+            Logger.LogDebug($"Test class = {type}");
+            if (type == null)
             {
-                TestUtils.DeleteDirectory(options.CheckPointDirectory);
+                Logger.LogWarn($"Please use one test-name as first parameter : {string.Join(", ", TestClasses.Select(tp => tp.Name))} ");
+                ShowUsage();
+                return;
             }
 
-            var sparkContext = new SparkContext(new SparkConf().SetAppName(typeof(kafkaStreamTest).Name));
-            var topicList = new List<string> { options.topic };
+            var kafkaTest = Activator.CreateInstance(type) as ITestKafkaBase;
 
-            var kafkaParams = new Dictionary<string, string>
+            var testArgs = new List<string>(args);
+            testArgs.RemoveAt(0);
+            if (testArgs.Count == 0)
             {
-                { "group.id",  options.groupId.ToString() },
-                { "metadata.broker.list" ,  options.brokerList.ToString() },
-                { "auto.offset.reset" ,  options.autoOffset.ToString() },
-                //{"zookeeper.session.timeout.ms" ,  "200" },
-                //{"zookeeper.sync.time.ms" -> "6000"
-                //{ "auto.commit.interval.ms" ,  "1000" },
-                //{ "serializer.class" -> "kafka.serializer.StringEncoder"
-                {"zookeeper.connect" ,  options.zookeeper.ToString() },
-                { "zookeeper.connection.timeout.ms",  "1000" }
-            };
-
-            var offsetsRange = new Dictionary<string, long>
-            {
-
-            };
-
-            var streamingContext = StreamingContext.GetOrCreate(options.CheckPointDirectory,
-                () =>
-                {
-                    var ssc = new StreamingContext(sparkContext, options.SlideSeconds);
-                    ssc.Checkpoint(options.CheckPointDirectory);
-
-                    var stream = KafkaUtils.CreateDirectStream(ssc, topicList, kafkaParams, offsetsRange)
-                        .Map(line => Encoding.UTF8.GetString(line.Value));
-
-                    var pairs = stream.Map(new ParseKeyValueArray().Parse);
-
-                    var reducedStream = pairs.ReduceByKeyAndWindow(
-                        new ReduceHelper(options.CheckArray).Sum,
-                        new ReduceHelper(options.CheckArray).InverseSum,
-                        options.WindowSeconds,
-                        options.SlideSeconds);
-
-                    reducedStream.ForeachRDD(new SumCountStatic().ForeachRDD<int[]>);
-
-                    if (!string.IsNullOrWhiteSpace(options.SaveTxtDirectory))
-                    {
-                        reducedStream.SaveAsTextFiles(Path.Combine(options.SaveTxtDirectory, typeof(kafkaStreamTest).Name), ".txt");
-                    }
-
-                    return ssc;
-                });
-
-            streamingContext.Start();
-
-            if (options.RunningSeconds > 0)
-            {
-                streamingContext.AwaitTerminationOrTimeout(options.RunningSeconds * 1000);
+                testArgs.Add("-h");
             }
 
-            Log("Final sumCount : {0}", SumCountStatic.GetStaticSumCount().ToString());
+            var sparkContext = new Lazy<SparkContext>(() => new SparkContext(new SparkConf().SetAppName(typeof(kafkaStreamTest).Name)));
+            kafkaTest.Run(testArgs.ToArray(), sparkContext);
+        }
+
+        static void ShowUsage()
+        {
+            Console.WriteLine($"Usage : {ExeName} Test-Name Test-args");
+            Console.WriteLine($"{new string('#', 20)} Test-Name as following: {new string('#', 20)}");
+            TestClasses.ForEach(tp => Console.WriteLine(tp.Name));
+
+            var idx = DateTime.Now.Second % TestClasses.Count; //new Random((int)DateTime.Now.Ticks & 0x0000FFFF).Next(0, TestClasses.Count - 1);
+            var type = TestClasses[(int)idx];
+            Console.WriteLine($"{new string('#', 20)} Example : {ExeName} {type.Name} {new string('#', 20)}");
+            var kafkaTest = Activator.CreateInstance(type) as ITestKafkaBase;
+            kafkaTest.ParseArgs(new string[] { "-help" });
+            Console.WriteLine(new string('#', 60));
         }
     }
 }

@@ -46,6 +46,8 @@ namespace kafkaStreamTest
                 return;
             }
 
+            PrepareToRun();
+
             var options = Options as WindowSlideTestOptions;
 
             var streamingContext = StreamingContext.GetOrCreate(options.CheckPointDirectory,
@@ -67,21 +69,13 @@ namespace kafkaStreamTest
                         );
 
                     reducedStream.ForeachRDD(new SumCountStatic().ForeachRDD<int[]>);
-
-                    if (!string.IsNullOrWhiteSpace(options.SaveTxtDirectory))
-                    {
-                        reducedStream.SaveAsTextFiles(Path.Combine(options.SaveTxtDirectory, typeof(kafkaStreamTest).Name), ".txt");
-                    }
-
+                    SaveStreamToFile(reducedStream);
                     return ssc;
                 });
 
             streamingContext.Start();
 
-            if (options.RunningSeconds > 0)
-            {
-                streamingContext.AwaitTerminationOrTimeout(options.RunningSeconds * 1000);
-            }
+            WaitTerminationOrTimeout(streamingContext);
 
             Logger.LogInfo("Final sumCount : {0}", SumCountStatic.GetStaticSumCount().ToString());
         }
@@ -102,18 +96,9 @@ namespace kafkaStreamTest
             }
 
             topicList = GetTopics(Options);
-
-            kafkaParams = GetKafkaParameters(Options);
-
-            offsetsRange = GetOffsetRanges(Options);
-
-            if (Options.DeleteCheckPointDirectory)
-            {
-                TestUtils.DeleteDirectory(Options.CheckPointDirectory);
-            }
+            Logger.LogInfo($"topicList = {string.Join(", ", topicList) } ");
 
             return true;
         }
-
     }
 }

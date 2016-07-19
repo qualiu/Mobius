@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,7 @@ namespace kafkaStreamTest
                 typeof(WindowSlideTest),
                 typeof(UnionTopicTest)
             };
+
 
         static void Main(string[] args)
         {
@@ -46,7 +48,7 @@ namespace kafkaStreamTest
                 testArgs.Add("-h");
             }
 
-            var sparkContext = new Lazy<SparkContext>(() => new SparkContext(new SparkConf().SetAppName(typeof(kafkaStreamTest).Name)));
+            var sparkContext = new Lazy<SparkContext>(() => new SparkContext(new SparkConf().SetAppName(type.Name)));
             kafkaTest.Run(testArgs.ToArray(), sparkContext);
         }
 

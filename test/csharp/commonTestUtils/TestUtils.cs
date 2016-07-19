@@ -70,6 +70,27 @@ namespace CommonTestUtils
             }
         }
 
+        public static string DictionaryToString<TKey, TValue>(Dictionary<TKey, TValue> map, string separator = ", ")
+        {
+            var sb = new StringBuilder();
+            if (map == null)
+            {
+                return sb.ToString();
+            }
+
+            foreach (var kv in map)
+            {
+                if (sb.Length > 0)
+                {
+                    sb.Append(separator);
+                }
+
+                sb.Append($"{kv.Key} = {kv.Value}");
+            }
+
+            return sb.ToString();
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -136,7 +157,7 @@ namespace CommonTestUtils
             return IPAddress.Parse("127.0.0.1");
         }
 
-        public static void DeleteDirectory(string dir, bool throwException = false)
+        public static void DeleteDirectory(string dir, bool throwException = true)
         {
             try
             {

@@ -33,7 +33,7 @@ namespace testKeyValueStream
                 TestUtils.DeleteDirectory(Options.CheckPointDirectory);
             }
 
-            var prefix = ExeName + (Options.IsArrayValue ? "-array" + (Options.IsUnevenArray ? "-uneven" : "-even") : "-single") + "-";
+            var prefix = ExeName + (Options.IsArrayValue ? "-array" + (Options.IsUnevenArray ? "-uneven" : "-even") : "-single");
             var sc = new SparkContext(new SparkConf().SetAppName(prefix));
 
             var beginTime = DateTime.Now;
@@ -130,7 +130,7 @@ namespace testKeyValueStream
 
             if (!string.IsNullOrWhiteSpace(Options.SaveTxtDirectory))
             {
-                reducedStream.SaveAsTextFiles(Path.Combine(Options.SaveTxtDirectory, prefix), suffix);
+                reducedStream.Map(kv => $"{kv.Key} = {TestUtils.GetValueText(kv.Value)}").SaveAsTextFiles(Path.Combine(Options.SaveTxtDirectory, prefix), suffix);
             }
         }
 

@@ -1,5 +1,5 @@
 @echo off
-@setlocal enabledelayedexpansion
+setlocal enabledelayedexpansion
 
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%

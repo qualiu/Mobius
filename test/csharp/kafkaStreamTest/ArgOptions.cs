@@ -24,10 +24,6 @@ namespace kafkaStreamTest
         public String GroupId { get; set; }
 
 
-        [ArgDefaultValue(1), ArgDescription("Kafka topic partition")]
-        public int Partition { get; set; }
-
-
         [ArgDefaultValue(-1), ArgDescription("Kafka topic fromOffset")]
         public long FromOffset { get; set; }
 

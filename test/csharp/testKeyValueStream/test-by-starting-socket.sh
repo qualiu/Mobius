@@ -25,7 +25,7 @@ CheckExist "$TestExePath" "test stream exe"
 if [ $# -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     echo "No parameter, Usage as following, run : $TestExePath"
     $TestExePath
-    echo "Example parameters : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -v 50 -c /tmp/checkDir -d 1 "
+    echo "Example parameters : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -n 50 -c /tmp/checkDir -d 1 "
     echo "Parameters like host, port and validation are according to source socket tool : $SourceSocketExe"
     echo "Test usage just run : $TestExePath"
     exit 
@@ -36,7 +36,7 @@ ExeName=$(basename $TestExePath)
 
 Port=$(echo "$@" | perl -n -e '/(?:\s|^)-P(?:ort)?\s+(\d+)/i && print $1')
 Host=$(echo "$@" | perl -n -e '/(?:\s|^)-H(?:ost)?\s+(\S+)/i && print $1')
-ValidationLines=$(echo $@ | perl -n -e '/[^\S]-(?:n|Validat\w+)(?:ost)?\s+(\d+)/i && print $1')
+LineCount=$(echo $@ | perl -n -e '/[^\S]-(?:n|LineCount\w*)(?:ost)?\s+(\d+)/i && print $1')
 
 TestArgs=""
 SocketArgs=""
@@ -55,8 +55,8 @@ fi
 SocketArgs="-p $Port $SocketArgs"
 SocketArgs="-H $Host $SocketArgs"
 
-if [ -n "$ValidationLines" ]; then
-    SocketArgs="-n $ValidationLines $SocketArgs"
+if [ -n "$LineCount" ]; then
+    SocketArgs="-n $LineCount $SocketArgs"
 fi
 
 SocketArgs=$(echo "$SocketArgs" | sed 's/^\s*//' | sed 's/\s*$//' )

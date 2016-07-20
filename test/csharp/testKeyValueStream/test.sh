@@ -22,7 +22,7 @@ CheckExist "$TestExePath" "test stream exe"
 if [ $# -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     echo "No parameter, Usage as following, run : $TestExePath"
     $TestExePath
-    echo "Example parameters : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -v 50 -c /tmp/checkDir -d 1 "
+    echo "Example parameters : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -n 50 -c /tmp/checkDir -d 1 "
     echo "Test usage just run : $TestExePath"
     exit 
 fi

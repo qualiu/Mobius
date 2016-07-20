@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CommonTestUtils;
 using KafkaNet;
@@ -18,13 +19,13 @@ namespace ReadWriteKafka
         [ArgRequired(), ArgDefaultValue("http://localhost:9092"), ArgDescription("Kafka metadata.broker.list (separated by ';' if multiple)")]
         public String BrokerList { get; set; }
 
-        [ArgDefaultValue("id_user"), ArgDescription("Kafka topic to write for id-user")]
+        [ArgDefaultValue(""), ArgDescription("Kafka topic to write for id-user")]
         public String TopicIdUser { get; set; }
 
-        [ArgDefaultValue("id_count"), ArgDescription("Kafka topic to write for id-count")]
+        [ArgDefaultValue(""), ArgDescription("Kafka topic to write for id-count")]
         public String TopicIdCount { get; set; }
 
-        [ArgDefaultValue(60), ArgDescription("Read/Write row count")]
+        [ArgDefaultValue(60), ArgDescription("Read/Write row count : 0 means no limit")]
         public long Rows { get; set; }
 
         [ArgDefaultValue(false), ArgDescription("Is writing message to Kafka (or else reading)")]
@@ -36,13 +37,24 @@ namespace ReadWriteKafka
         [ArgDefaultValue(false), ArgDescription("Display row header info")]
         public bool ShowRowHeader { get; set; }
 
-        //[ArgDefaultValue(0), ArgDescription("Kafka connection timeout milliseconds")]
-        //public int KafkaTimeout { get; set; }
+        [ArgDefaultValue(1000), ArgDescription("Writing interval : milliseconds")]
+        public int Interval { get; set; }
+
+        [ArgDefaultValue(60), ArgDescription("Writing duration : seconds, 0 means no limit")]
+        public int RunningSeconds { get; set; }
     }
 
     class ReadWriteKafka : BaseTestUtilLog4Net<ReadWriteKafka>
     {
         private static Random random = new Random();
+
+        private static long _TotalWrote = 0;
+        private static long TotalWrote
+        {
+            get { return Interlocked.Read(ref _TotalWrote); }
+            set { Interlocked.Exchange(ref _TotalWrote, value); }
+        }
+
         static void Main(string[] args)
         {
             var parsedOK = false;
@@ -80,7 +92,7 @@ namespace ReadWriteKafka
             return new string(name);
         }
 
-        static void WriteTopic(List<Uri> brokersUriList, string topic, List<Message> messages)
+        static void WriteTopic(List<Uri> brokersUriList, string topic, IEnumerable<Message> messages, bool showMesage = true, bool showReadCommand = true)
         {
             var beginTime = DateTime.Now;
             var connectedTime = beginTime;
@@ -89,43 +101,83 @@ namespace ReadWriteKafka
             {
                 connectedTime = DateTime.Now;
                 producer.SendMessageAsync(topic, messages).Wait();
+                TotalWrote += messages.Count();
             }
 
-            var endTime = DateTime.Now;
-            Logger.InfoFormat("Wrote {0} messages into topic {1} , used time = {2}, connection used = {3}",
-                messages.Count, topic, endTime - beginTime, connectedTime - beginTime);
 
-            Logger.Info($"You can read it by : {ExePath} -{nameof(ArgReadWriteKafka.BrokerList)} {string.Join(",", brokersUriList)} " +
+            var endTime = DateTime.Now;
+            if (showMesage)
+            {
+                Logger.Info($"Wrote {messages.Count()}-{TotalWrote} messages into topic {topic}, used time = {endTime - beginTime}, connection used = {connectedTime - beginTime}");
+            }
+
+            if (showReadCommand)
+            {
+                Logger.Info($"You can read it by : {ExePath} -{nameof(ArgReadWriteKafka.BrokerList)} {string.Join(",", brokersUriList)} " +
                 $"-{nameof(ArgReadWriteKafka.ReadTopic)} {topic} ");
+            }
         }
 
         static void WriteTestData(List<Uri> brokersUriList, ArgReadWriteKafka options)
         {
             var baseId = 100;
-            var maxId = baseId + (int)(options.Rows * 0.6);
+            var maxRows = Math.Min(3000, Math.Max(100, options.Rows));
+            var maxId = baseId + (int)(maxRows * 0.6);
             var idList = new HashSet<long>();
             for (var k = 0; k < maxId - baseId; k++)
             {
                 idList.Add(GerenateUserId(baseId, maxId));
             }
 
-            var tableIdUser = new List<Message>();
-            foreach (var id in idList)
-            {
-                tableIdUser.Add(new Message(new RowIdUser { Id = id, User = GerenateUserName(id) }.ToString()));
-            }
-
             Logger.Debug($"baseId = {baseId}, maxId = {maxId}, idList.count = {idList.Count}, to write rows = {options.Rows}");
-            var tableIdCount = new List<Message>();
-            for (var k = 0; k < options.Rows; k++)
+
+            if (!string.IsNullOrWhiteSpace(options.TopicIdUser))
             {
-                var time = DateTime.Now.Add(TimeSpan.FromSeconds(k));
-                tableIdCount.Add(new Message(new RowIdCountTime { Id = idList.ElementAt(random.Next(0, idList.Count - 1)), Count = 1, Time = time }.ToString()));
+                var tableIdUser = new List<Message>();
+                foreach (var id in idList)
+                {
+                    tableIdUser.Add(new Message(new RowIdUser { Id = id, User = GerenateUserName(id) }.ToString()));
+                }
+
+                WriteTopic(brokersUriList, options.TopicIdUser, tableIdUser);
             }
 
-            WriteTopic(brokersUriList, options.TopicIdUser, tableIdUser);
+            if (string.IsNullOrWhiteSpace(options.TopicIdCount))
+            {
+                return;
+            }
 
-            WriteTopic(brokersUriList, options.TopicIdCount, tableIdCount);
+            var beginTime = DateTime.Now;
+            var endTime = options.RunningSeconds == 0 ? DateTime.MaxValue : beginTime + TimeSpan.FromSeconds(options.RunningSeconds);
+            var rows = options.Rows == 0 ? long.MaxValue : options.Rows;
+
+            var oneMessage = new Message(new RowIdCountTime().ToString());
+            var size = oneMessage.Value.Length;
+            var oneBatch = 1024 * 1024 / size;
+            if (options.Interval >= 100)
+            {
+                oneBatch = 1;
+            }
+
+            var tableIdCount = new List<Message>();
+
+            for (var k = 0; k < rows && DateTime.Now < endTime; k++)
+            {
+                var time = DateTime.Now.Add(TimeSpan.FromMilliseconds(Math.Max(options.Interval, 1)));
+                tableIdCount.Add(new Message(new RowIdCountTime { Id = idList.ElementAt(random.Next(0, idList.Count - 1)), Count = 1, Time = time }.ToString()));
+                if (tableIdCount.Count == oneBatch)
+                {
+                    WriteTopic(brokersUriList, options.TopicIdCount, tableIdCount, true, false);
+                    tableIdCount.Clear();
+                }
+
+                if (options.Interval > 0)
+                {
+                    Thread.Sleep(options.Interval);
+                }
+            }
+
+            WriteTopic(brokersUriList, options.TopicIdCount, tableIdCount, tableIdCount.Count > 0, true);
         }
 
         static void ReadData(List<Uri> brokersUriList, ArgReadWriteKafka options)
@@ -164,19 +216,9 @@ namespace ReadWriteKafka
                     }
 
                     var endTime = DateTime.Now;
-                    Logger.InfoFormat("Read {0} rows in topic {1}, brokers = {2}, used time = {3}, connection cost = {4}", rows, options.ReadTopic, options.BrokerList, endTime - beginTime, connectedTime - beginTime);
+                    Logger.InfoFormat($"Read {rows} rows in topic {options.ReadTopic}, brokers = {options.BrokerList}, used time = {endTime - beginTime}, connection cost = {connectedTime - beginTime}");
                 }
             }
-        }
-
-        static void ListTopics(List<Uri> brokersUriList, ArgReadWriteKafka options)
-        {
-
-        }
-
-        static void DeleteTopics(List<Uri> brokersUriList, ArgReadWriteKafka options, string topic)
-        {
-
         }
     }
 }

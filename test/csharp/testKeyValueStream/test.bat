@@ -20,7 +20,7 @@ set AllArgs=%*
 if "%1" == "" (
     echo No parameter, Usage as following, run : %TestExePath%
     call %TestExePath%
-    echo Example parameters : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -v 50 -c d:\tmp\checkDir -d 1
+    echo Example parameters : -p 9112 -e 1 -r 30 -b 1 -w 3 -s 3 -n 50 -c d:\tmp\checkDir -d 1
     echo Test usage just run : %TestExePath%
     exit /b 0
 )

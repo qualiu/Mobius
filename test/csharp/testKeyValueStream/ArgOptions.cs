@@ -57,8 +57,8 @@ namespace testKeyValueStream
         [ArgShortcut("k"), ArgDefaultValue(true), ArgDescription("check array before operation such as reduce.")]
         public bool CheckArray { get; set; }
 
-        [ArgShortcut("v"), ArgDefaultValue(-1), ArgDescription("line count to validate with, ignore if < 0 ")]
-        public Int64 ValidateCount { get; set; }
+        [ArgShortcut("n"), ArgDefaultValue(-1), ArgDescription("line count to check with, ignore if < 0 ")]
+        public Int64 LineCount { get; set; }
 
         [HelpHook, ArgDescription("Shows this help"), ArgShortcut("-?")]
         public bool Help { get; set; }

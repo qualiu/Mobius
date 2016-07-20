@@ -21,7 +21,7 @@ namespace kafkaStreamTest
         static void Main(string[] args)
         {
             var config = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
-            Logger.LogInfo("{0} logger configuration {1}", File.Exists(config) ? "Exist" : "Not Exist", config);
+            Logger.LogInfo("{0} configuration {1}", File.Exists(config) ? "Exist" : "Not Exist", config);
 
             if (args.Length < 1 || args[0] == "-h" || args[0] == "--help")
             {

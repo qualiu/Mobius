@@ -15,7 +15,7 @@ namespace testKeyValueStream
         public static void Main(string[] args)
         {
             var config = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
-            Logger.LogDebug("{0} logger configuration {1}", File.Exists(config) ? "Exist" : "Not Exist", config);
+            Logger.LogDebug("{0} configuration {1}", File.Exists(config) ? "Exist" : "Not Exist", config);
             var isParseOK = false;
             //Options = ParserByCommandLine.Parse(args, out isParseOK);
             Options = ArgParser.Parse<ArgOptions>(args, out isParseOK, "-Help");
@@ -58,19 +58,19 @@ namespace testKeyValueStream
                 ssc.Stop();
 
                 var sum = newSum - oldSum;
-                var isValidationOK = Options.ValidateCount <= 0 || Options.ValidateCount == sum.LineCount;
-                var validationMessage = Options.ValidateCount <= 0 ? string.Empty :
-                    (isValidationOK ? ". Validation OK" : string.Format(". Validation failed : expected = {0}, but line count = {1}", Options.ValidateCount, sum.LineCount));
+                var isSameLineCount = Options.LineCount <= 0 || Options.LineCount == sum.LineCount;
+                var message = Options.LineCount <= 0 ? string.Empty :
+                    (isSameLineCount ? ". LineCount same" : string.Format(". LineCount different : expected = {0}, but line count = {1}", Options.LineCount, sum.LineCount));
 
                 Logger.LogInfo("oldSum = {0}, newSum = {1}, sum = {2}", oldSum, newSum, sum);
                 Logger.LogInfo("============= End of {0}, start from {1} , used {2} s. total cost {3} s. Reduced final sumCount : {4} {5}",
                     timesInfo, startTime.ToString(TestUtils.MilliTimeFormat), (DateTime.Now - startTime).TotalSeconds,
-                    (DateTime.Now - beginTime).TotalSeconds, sum.ToString(), validationMessage);
+                    (DateTime.Now - beginTime).TotalSeconds, sum.ToString(), message);
 
-                if (!isValidationOK)
+                if (!isSameLineCount)
                 {
                     Options.OutArgs((name, value) => Logger.LogInfo("Trace arg : {0} = {1}", name, value));
-                    throw new Exception(validationMessage);
+                    throw new Exception(message);
                 }
             };
 

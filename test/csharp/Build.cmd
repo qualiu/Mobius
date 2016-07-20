@@ -24,7 +24,7 @@ if NOT EXIST "%MSBUILDEXEDIR%\." SET MSBUILDEXEDIR=%programfiles%\MSBuild\%Visua
 if NOT EXIST "%MSBUILDEXEDIR%\." GOTO :ErrorMSBUILD
 
 SET MSBUILDEXE=%MSBUILDEXEDIR%\MSBuild.exe
-SET MSBUILDOPT=/verbosity:minimal
+SET MSBUILDOPT=/verbosity:normal /p:WarningLevel=3
 
 if "%builduri%" == "" set builduri=Build.cmd
 

@@ -117,7 +117,7 @@ namespace kafkaStreamTest
                 streamingContext.AwaitTermination();
             }
 
-            Logger.LogInfo($"Finished, used time = {DateTime.UtcNow - beginTime}");
+            Logger.LogInfo($"Finished {typeof(ClassName).Name}, used time = {DateTime.UtcNow - beginTime}");
         }
     }
 }

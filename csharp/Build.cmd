@@ -1,6 +1,8 @@
 @setlocal
 @ECHO off
 
+if "%1" == "nocpp" set CppDll=NoCpp
+
 SET CMDHOME=%~dp0
 @REM Remove trailing backslash \
 set CMDHOME=%CMDHOME:~0,-1%
@@ -10,7 +12,8 @@ SET VisualStudioVersion=12.0
 if EXIST "%VS140COMNTOOLS%" SET VisualStudioVersion=14.0
 
 @REM Set Build OS
-SET CppDll=HasCpp
+if not defined CppDll SET CppDll=HasCpp
+
 SET VCBuildTool="%VS120COMNTOOLS:~0,-14%VC\bin\cl.exe"
 if EXIST "%VS140COMNTOOLS%" SET VCBuildTool="%VS140COMNTOOLS:~0,-14%VC\bin\cl.exe"
 if NOT EXIST %VCBuildTool% SET CppDll=NoCpp

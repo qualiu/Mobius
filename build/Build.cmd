@@ -2,6 +2,7 @@
 @echo OFF
 
 if "%1" == "csharp" set buildCSharp=true
+if "%2" == "nocpp" set CppBuild=nocpp
 
 SET CMDHOME=%~dp0
 @REM Remove trailing backslash \
@@ -107,6 +108,7 @@ if EXIST "%CMDHOME%\lib" (
 )
 
 :buildCpp
+if "%CppBuild%" == "nocpp" goto :buildCSharp
 Set CppSkipped=0
 @echo Assemble Mobius C++ components (RIOSOCK)
 pushd %CMDHOME%\..\cpp
@@ -135,7 +137,7 @@ pushd "%CMDHOME%\..\csharp"
 
 @rem clean any possible previous build first
 call Clean.cmd
-call Build.cmd
+call Build.cmd %CppBuild%
 
 if %ERRORLEVEL% NEQ 0 (
   @echo Build Mobius C# components failed, stop building.

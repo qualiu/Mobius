@@ -7,6 +7,13 @@ set CMDHOME=%CMDHOME:~0,-1%
 
 @REM Set msbuild location.
 SET VisualStudioVersion=12.0
+if EXIST "%VS140COMNTOOLS%" SET VisualStudioVersion=14.0
+
+@REM Set Build OS
+SET CppDll=HasCpp
+SET VCBuildTool="%VS120COMNTOOLS:~0,-14%VC\bin\cl.exe"
+if EXIST "%VS140COMNTOOLS%" SET VCBuildTool="%VS140COMNTOOLS:~0,-14%VC\bin\cl.exe"
+if NOT EXIST %VCBuildTool% SET CppDll=NoCpp
 
 SET MSBUILDEXEDIR=%programfiles(x86)%\MSBuild\%VisualStudioVersion%\Bin
 if NOT EXIST "%MSBUILDEXEDIR%\." SET MSBUILDEXEDIR=%programfiles%\MSBuild\%VisualStudioVersion%\Bin
@@ -39,7 +46,7 @@ SET CONFIGURATION=%STEP%
 
 SET STEP=%CONFIGURATION%
 
-"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION% %MSBUILDOPT% "%PROJ%"
+"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION%;AllowUnsafeBlocks=true %MSBUILDOPT% "%PROJ%"
 @if ERRORLEVEL 1 GOTO :ErrorStop
 @echo BUILD ok for %CONFIGURATION% %PROJ%
 
@@ -48,7 +55,7 @@ SET STEP=Release
 
 SET CONFIGURATION=%STEP%
 
-"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION% %MSBUILDOPT% "%PROJ%"
+"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION%;AllowUnsafeBlocks=true %MSBUILDOPT% "%PROJ%"
 @if ERRORLEVEL 1 GOTO :ErrorStop
 @echo BUILD ok for %CONFIGURATION% %PROJ%
 

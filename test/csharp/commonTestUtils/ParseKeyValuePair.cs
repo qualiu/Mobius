@@ -11,7 +11,7 @@ namespace CommonTestUtils
     /// </summary>
     /// <typeparam name="ValueType"></typeparam>
     [Serializable]
-    public abstract class ParseKeyValuePairBase<ValueType> : BaseTestUtilLog<ParseKeyValuePairBase<ValueType>>
+    public abstract class ParseKeyValuePairBase<ValueType, ClassName> : BaseTestUtilLog<ClassName>
     {
         private static long LineCount = 0;
 
@@ -25,11 +25,13 @@ namespace CommonTestUtils
             this.needPrintMessage = needPrintMessage;
         }
 
-        public virtual void Log(string message)
+        public virtual void ShowReceivedLine(string line)
         {
-            //Console.WriteLine("{0} {1} : {2}", TestUtils.NowMilli, this.GetType().Name, message);
-            //Console.WriteLine("{0} {1}-V[{2}] : {3}", TestUtils.NowMilli, this.GetType().Name, valueArrayElements, message);
-            Logger.LogDebug("{0} {1} Line[{2}] : {3}", TestUtils.NowMilli, this.GetType().Name, ++LineCount, message);
+            LineCount++;
+            if (needPrintMessage)
+            {
+                Logger.LogInfo($"{TestUtils.NowMilli} {this.GetType().Name} Line[{LineCount}]: {line}");
+            }
         }
 
         public virtual KeyValuePair<string, ValueType> Parse(string line)
@@ -41,11 +43,17 @@ namespace CommonTestUtils
         {
             var match = Regex.Match(line, @"^(?<Key>[\d-]+ [\d:]+)\.(?<Value>\d+)");
             var key = match.Groups["Key"].Value;
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new Exception($"cannot parse key from line : {line}");
+            }
+
             var valueSet = Regex.Matches(match.Groups["Value"].Value, @"\d");
             if (elements == 0)
             {
                 elements = valueSet.Count;
             }
+
             var values = new int[elements];
             var n = Math.Min(valueSet.Count, values.Length);
             for (var k = 0; k < n; k++)
@@ -60,17 +68,18 @@ namespace CommonTestUtils
         {
             if (needPrintMessage)
             {
-                Logger.LogDebug("key = {0} , {1}", kv.Key, TestUtils.ArrayToText("value", kv.Value));
+                Logger.LogInfo($"key = {kv.Key} , {TestUtils.ArrayToText("value", kv.Value)}");
             }
         }
     }
 
     [Serializable]
-    public class ParseKeyValueArray : ParseKeyValuePairBase<int[]>
+    public class ParseKeyValueArray : ParseKeyValuePairBase<int[], ParseKeyValueArray>
     {
         public ParseKeyValueArray(long valueElementCount = 0, bool needPrintMessage = true) : base(valueElementCount, needPrintMessage) { }
         public override KeyValuePair<string, int[]> Parse(string line)
         {
+            ShowReceivedLine(line);
             var kv = Parse(line, this.valueArrayElements);
             Print(kv);
             return kv;
@@ -86,6 +95,7 @@ namespace CommonTestUtils
 
         public override KeyValuePair<string, int[]> Parse(string line)
         {
+            ShowReceivedLine(line);
             var kv = base.Parse(line);
             var values = kv.Value.ToList();
             int removeCount = random.Next() % (values.Count + 1);
@@ -97,12 +107,13 @@ namespace CommonTestUtils
     }
 
     [Serializable]
-    public class ParseKeyValue : ParseKeyValuePairBase<int>
+    public class ParseKeyValue : ParseKeyValuePairBase<int, ParseKeyValue>
     {
         public ParseKeyValue(long valueArrayElements = 0, bool needPrintMessage = true) : base(valueArrayElements, needPrintMessage) { }
 
         public override KeyValuePair<string, int> Parse(string line)
         {
+            ShowReceivedLine(line);
             var kv = Parse(line, 1);
             Print(kv);
             return new KeyValuePair<string, int>(kv.Key, kv.Value[0]);

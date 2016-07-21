@@ -85,7 +85,7 @@ namespace SourceLinesSocket
 
             Logger.InfoFormat("finished, passed " + (DateTime.Now - startTime).TotalSeconds + " s, thread id = " + thread.ManagedThreadId + " , state = " + thread.ThreadState + ", isAlive = " + thread.IsAlive);
         }
-        
+
         private static void ListenToClient(DateTime startTime, IArgOptions options, TimeSpan runningDuration)
         {
             ConnectedTimes++;
@@ -151,7 +151,7 @@ namespace SourceLinesSocket
                         break;
                     }
                     var message = string.Format("{0} from '{1}' '{2}' {3} times[{4}] send[{5}] keys[{6}] to {7}{8}",
-                        now.ToString(MicroTimeFormat), Environment.OSVersion, Environment.MachineName, HostAddress, ConnectedTimes,
+                        now.ToString(MicroDateTimeFormat), Environment.OSVersion, Environment.MachineName, HostAddress, ConnectedTimes,
                         sent, keys.Count, clientSocket.RemoteEndPoint, Environment.NewLine);
                     Console.Write(message);
                     clientSocket.Send(Encoding.ASCII.GetBytes(message));

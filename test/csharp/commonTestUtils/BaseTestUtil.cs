@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -58,6 +59,14 @@ namespace CommonTestUtils
         private static Lazy<ILog> _logger = new Lazy<ILog>(() => LogManager.GetLogger(typeof(ClassName)));
         protected static ILog Logger { get { return _logger.Value; } }
     }
+
+    [Serializable]
+    public class BaseTestUtilLog4NetName<ClassName> : BaseTestUtil<ClassName>
+    {
+        private static Lazy<ILog> _logger = new Lazy<ILog>(() => LogManager.GetLogger(typeof(ClassName).Name));
+        protected static ILog Logger { get { return _logger.Value; } }
+    }
+
 
     [Serializable]
     public static class Extension

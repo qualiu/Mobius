@@ -60,6 +60,9 @@ namespace testKeyValueStream
         [ArgShortcut("n"), ArgDefaultValue(-1), ArgDescription("line count to check with, ignore if < 0 ")]
         public Int64 LineCount { get; set; }
 
+        [ArgDefaultValue(true), ArgDescription("Print received lines")]
+        public bool PrintReceivedLines { get; set; }
+
         [HelpHook, ArgDescription("Shows this help"), ArgShortcut("-?")]
         public bool Help { get; set; }
 

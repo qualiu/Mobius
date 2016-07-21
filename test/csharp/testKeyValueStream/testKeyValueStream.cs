@@ -16,6 +16,8 @@ namespace testKeyValueStream
         {
             var config = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
             Logger.LogDebug("{0} configuration {1}", File.Exists(config) ? "Exist" : "Not Exist", config);
+            Logger.LogDebug($"sizeof(int) = {sizeof(int)}, sizeof(long) = {sizeof(long)}, OSVersion = {Environment.OSVersion}, MachineName = {Environment.MachineName}"
+                + $", Is64BitOperatingSystem = {Environment.Is64BitOperatingSystem}, Is64BitProcess = {Environment.Is64BitProcess}");
             var isParseOK = false;
             //Options = ParserByCommandLine.Parse(args, out isParseOK);
             Options = ArgParser.Parse<ArgOptions>(args, out isParseOK, "-Help");
@@ -83,16 +85,15 @@ namespace testKeyValueStream
             if (!Options.IsArrayValue)
             {
                 //var pairs = lines.Map(line => new ParseKeyValue(0).Parse(line));
-                var pairs = lines.Map(new ParseKeyValue(0).Parse);
+                var pairs = lines.Map(new ParseKeyValue(0, Options.PrintReceivedLines).Parse);
                 var reducedStream = isReduceByKey ? pairs.ReduceByKey(Sum)
                     : pairs.ReduceByKeyAndWindow(Sum, InverseSum, Options.WindowSeconds, Options.SlideSeconds);
                 ForEachRDD("KeyValue", reducedStream, prefix, suffix);
             }
             else
             {
-
                 //var pairs = lines.Map(line => new ParseKeyValueUnevenArray(elements).Parse(line));
-                var pairs = Options.IsUnevenArray ? lines.Map(new ParseKeyValueUnevenArray(elements).Parse) : lines.Map(new ParseKeyValueArray(elements).Parse);
+                var pairs = Options.IsUnevenArray ? lines.Map(new ParseKeyValueUnevenArray(elements, Options.PrintReceivedLines).Parse) : lines.Map(new ParseKeyValueArray(elements, Options.PrintReceivedLines).Parse);
                 var reducedStream = isReduceByKey ? pairs.ReduceByKey(new ReduceHelper(Options.CheckArray).Sum)
                     : pairs.ReduceByKeyAndWindow(new ReduceHelper(Options.CheckArray).Sum, new ReduceHelper(Options.CheckArray).InverseSum, Options.WindowSeconds, Options.SlideSeconds);
                 ForEachRDD(Options.IsUnevenArray ? "KeyValueUnevenArray" : "KeyValueArray", reducedStream, prefix, suffix);
@@ -104,30 +105,11 @@ namespace testKeyValueStream
             Logger.LogDebug("ForEachRDD " + title);
             reducedStream.ForeachRDD(new SumCountStatic().ForeachRDD<V>);
 
-            //reducedStream.ForeachRDD(new SumCountHelper(sumCount).ForeachRDD<V>);
-            //reducedStream.ForeachRDD((time, rdd) => new SumCountHelper(sumCount).Execute<V>(time, rdd));
-
-            //reducedStream.ForeachRDD((time, rdd) =>
-            //{
-            //    sumCount.RddCount += 1;
-            //    var taken = rdd.Collect();
-            //    Console.WriteLine("{0} taken.length = {1} , taken = {2}", TestUtils.NowMilli, taken.Length, taken);
-
-            //    foreach (object record in taken)
-            //    {
-            //        sumCount.RecordCount += 1;
-            //        KeyValuePair<string, V> kv = (KeyValuePair<string, V>)record;
-            //        Console.WriteLine("{0} record: key = {2}, value = {3}", TestUtils.NowMilli, record, kv.Key, GetValueText(kv.Value));
-            //        sumCount.LineCount += GetFirstElementValue(kv.Value);
-            //    }
-            //});
-
             if (!string.IsNullOrWhiteSpace(Options.SaveTxtDirectory))
             {
                 reducedStream.Map(kv => $"{kv.Key} = {TestUtils.GetValueText(kv.Value)}").SaveAsTextFiles(Path.Combine(Options.SaveTxtDirectory, prefix), suffix);
             }
         }
-
 
         static int Sum(int a, int b)
         {
@@ -140,6 +122,5 @@ namespace testKeyValueStream
             Logger.LogDebug("InverseSum : a - b = {0} - {1}", a, b);
             return a - b;
         }
-
     }
 }

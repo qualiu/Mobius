@@ -53,7 +53,7 @@ namespace kafkaStreamTest
             var streamingContext = StreamingContext.GetOrCreate(options.CheckPointDirectory,
                 () =>
                 {
-                    var ssc = new StreamingContext(sparkContext.Value, options.SlideSeconds);
+                    var ssc = new StreamingContext(sparkContext.Value, options.BatchSeconds * 1000L);
                     ssc.Checkpoint(options.CheckPointDirectory);
 
                     var stream = KafkaUtils.CreateDirectStream(ssc, topicList, kafkaParams, offsetsRange)

@@ -44,7 +44,7 @@ namespace testKeyValueStream
             {
                 var timesInfo = " test[" + testTime + "]-" + Options.TestTimes + " ";
                 Logger.LogInfo("============== Begin of " + timesInfo + " =========================");
-                var ssc = new StreamingContext(sc, Options.BatchSeconds);
+                var ssc = new StreamingContext(sc, Options.BatchSeconds * 1000L);
                 ssc.Checkpoint(Options.CheckPointDirectory);
                 var lines = ssc.SocketTextStream(Options.Host, Options.Port, StorageLevelType.MEMORY_AND_DISK_SER);
 

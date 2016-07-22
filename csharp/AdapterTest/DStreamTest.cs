@@ -21,7 +21,7 @@ namespace AdapterTest
         [Test]
         public void TestDStreamMapReduce()
         {
-            var ssc = new StreamingContext(new SparkContext("", ""), 1);
+            var ssc = new StreamingContext(new SparkContext("", ""), 1000L);
             Assert.IsNotNull((ssc.streamingContextProxy as MockStreamingContextProxy));
 
             var lines = ssc.TextFileStream(Path.GetTempPath());
@@ -31,7 +31,7 @@ namespace AdapterTest
 
             words.Slice(DateTime.MinValue, DateTime.MaxValue);
             words.Cache();
-            words.Checkpoint(1);
+            words.Checkpoint(1000);
             words.Window(1, 1);
 
             words.Count().ForeachRDD((time, rdd) =>
@@ -83,7 +83,7 @@ namespace AdapterTest
         [Test]
         public void TestDStreamTransform()
         {
-            var ssc = new StreamingContext(new SparkContext("", ""), 1);
+            var ssc = new StreamingContext(new SparkContext("", ""), 1000L);
             Assert.IsNotNull((ssc.streamingContextProxy as MockStreamingContextProxy));
 
             var lines = ssc.TextFileStream(Path.GetTempPath());
@@ -139,7 +139,7 @@ namespace AdapterTest
         [Test]
         public void TestDStreamJoin()
         {
-            var ssc = new StreamingContext(new SparkContext("", ""), 1);
+            var ssc = new StreamingContext(new SparkContext("", ""), 1000L);
             Assert.IsNotNull((ssc.streamingContextProxy as MockStreamingContextProxy));
 
             var lines = ssc.TextFileStream(Path.GetTempPath());
@@ -246,7 +246,7 @@ namespace AdapterTest
         [Test]
         public void TestDStreamUpdateStateByKey()
         {
-            var ssc = new StreamingContext(new SparkContext("", ""), 1);
+            var ssc = new StreamingContext(new SparkContext("", ""), 1000L);
             Assert.IsNotNull((ssc.streamingContextProxy as MockStreamingContextProxy));
 
             var lines = ssc.TextFileStream(Path.GetTempPath());
@@ -327,7 +327,7 @@ namespace AdapterTest
                 SparkCLREnvironment.SparkCLRProxy = sparkClrProxy.Object;
 
                 var sparkConf = new SparkConf(false);
-                var ssc = new StreamingContext(new SparkContext(sparkContextProxy.Object, sparkConf), 10);
+                var ssc = new StreamingContext(new SparkContext(sparkContextProxy.Object, sparkConf), 10000L);
 
                 var dstreamProxy = new Mock<IDStreamProxy>();
                 var pairDStream = new DStream<KeyValuePair<string, int>>(dstreamProxy.Object, ssc);
@@ -428,7 +428,7 @@ namespace AdapterTest
         {
             var sc = new SparkContext("", "");
             var rdd = sc.Parallelize(Enumerable.Range(0, 10), 1);
-            var ssc = new StreamingContext(sc, 1);
+            var ssc = new StreamingContext(sc, 1000L);
 
             // test when rdd is null
             Assert.Throws<ArgumentNullException>(() => new ConstantInputDStream<int>(null, ssc));
@@ -436,6 +436,35 @@ namespace AdapterTest
             var constantInputDStream = new ConstantInputDStream<int>(rdd, ssc);
             Assert.IsNotNull(constantInputDStream);
             Assert.AreEqual(ssc, constantInputDStream.streamingContext);     
+        }
+
+        [Test]
+        public void TestCSharpInputDStream()
+        {
+            // test create CSharpInputDStream
+            var sc = new SparkContext("", "");
+            var ssc = new StreamingContext(sc, 1000L);
+            Func<double, int, IEnumerable<string>> func =
+                (double time, int pid) =>
+                {
+                    var list = new List<string>() { string.Format("PluggableInputDStream-{0}-{1}", pid, time) };
+                    return list.AsEnumerable();
+                };
+            const int numPartitions = 5;
+            var inputDStream = CSharpInputDStreamUtils.CreateStream<string>(
+                ssc,
+                numPartitions,
+                func);
+            Assert.IsNotNull(inputDStream);
+            Assert.AreEqual(ssc, inputDStream.streamingContext);
+
+            // test CSharpInputDStreamMapPartitionWithIndexHelper
+            int[] array = new int[numPartitions];
+            int partitionIndex = 0;
+            new CSharpInputDStreamMapPartitionWithIndexHelper<string>(0.0, func).Execute(partitionIndex, array.AsEnumerable());
+
+            // test CSharpInputDStreamGenerateRDDHelper
+            new CSharpInputDStreamGenerateRDDHelper<string>(numPartitions, func).Execute(0.0);
         }
     }
 }

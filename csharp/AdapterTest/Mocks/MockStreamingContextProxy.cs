@@ -23,7 +23,7 @@ namespace AdapterTest.Mocks
         public void Stop()
         {}
 
-        public void Remember(int durationSeconds)
+        public void Remember(long durationMs)
         {}
 
         public void Checkpoint(string directory)
@@ -110,6 +110,11 @@ namespace AdapterTest.Mocks
         }
 
         public IDStreamProxy CreateConstantInputDStream(IRDDProxy rddProxy)
+        {
+            return new MockDStreamProxy();
+        }
+
+        public IDStreamProxy CreateCSharpInputDStream(byte[] func, string serializationMode)
         {
             return new MockDStreamProxy();
         }

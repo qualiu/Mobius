@@ -39,7 +39,7 @@ rem use cmd /k if you want to keep the window
 ::start cmd /c "%SourceSocketExe%" -p %Port% -n %LineCount% -r 0 -q 0 -z 10 
 start cmd /c "%SourceSocketExe%" -p %Port% -n %LineCount% -r 0 -q 0
 
-set options=--executor-cores 2 --driver-cores 2 --executor-memory 2g --driver-memory 2g
+set options=--executor-cores 2 --driver-cores 2 --executor-memory 3g --driver-memory 3g
 :: SPARK_JAVA_OPTS="-verbose:gc -XX:-UseGCOverheadLimit -XX:+UseCompressedOops -XX:-PrintGCDetails -XX:+PrintGCTimeStamps $SPARK_JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/home/xujingwen/ocdc/spark-1.4.1-bin-hadoop2.6/`date +%m%d%H%M%S`.hprof"
 ::set extraJavaOptions=--conf "\"spark.executor.extraJavaOptions=-XX:-UseGCOverheadLimit -Xms2048M -Xmx2048M -verbose:gc -XX:+UseCompressedOops -Xloggc:kvGC.log -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:ErrorFile=kvError.log -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=kv-heap-dump.hprof\""
 ::set extraJavaOptions=--conf "\"spark.executor.extraJavaOptions=-XX:-UseGCOverheadLimit -Xms2048M -Xmx2048M\""

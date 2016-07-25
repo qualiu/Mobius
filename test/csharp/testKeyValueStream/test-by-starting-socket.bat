@@ -14,12 +14,12 @@ for %%a in ("%TestExePath%") do (
 
 set CodeRootDir=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir%
+call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
 
-call :CheckExist %SourceSocketExe% "SourceSocketExe"
-call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"
-call :CheckExist %TestExePath% "TestExePath"
-call :CheckExist %ExeDir% "ExeDir"
+call :CheckExist %SourceSocketExe% "SourceSocketExe" || exit /b 1
+call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"  || exit /b 1
+call :CheckExist %TestExePath% "TestExePath" || exit /b 1
+call :CheckExist %ExeDir% "ExeDir" || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -35,9 +35,8 @@ set Port=9333
 set LineCount=60
 call :ExtractArgs %*
 
-rem use cmd /k if you want to keep the window
-::start cmd /c "%SourceSocketExe%" -p %Port% -n %LineCount% -r 0 -q 0 -z 10 
-start cmd /c "%SourceSocketExe%" -p %Port% -n %LineCount% -r 0 -q 0
+rem use cmd /k if you want to keep the window 
+start cmd /c "%SourceSocketExe%" -p %Port% -n %LineCount% -r 999 -q 0 -z 9
 
 set options=--executor-cores 2 --driver-cores 2 --executor-memory 3g --driver-memory 3g
 :: SPARK_JAVA_OPTS="-verbose:gc -XX:-UseGCOverheadLimit -XX:+UseCompressedOops -XX:-PrintGCDetails -XX:+PrintGCTimeStamps $SPARK_JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/home/xujingwen/ocdc/spark-1.4.1-bin-hadoop2.6/`date +%m%d%H%M%S`.hprof"
@@ -77,6 +76,8 @@ goto :End
         echo Not exist %2 : %1
         exit /b 1
     )
+    
+    goto :End
     
 :End
 

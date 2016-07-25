@@ -10,6 +10,17 @@ set ShellDir=%ShellDir:~0,-1%
 set CodeRoot=%ShellDir%\..\..
 set RioCodeDir=%CodeRoot%\cpp
 
+call where nuget.exe 2>nul
+if ERRORLEVEL 1 ( 
+    if exist "%CodeRoot%\build\tools\nuget.exe" ( 
+       set "PATH=%PATH%;%CodeRoot%\build\tools"
+    ) else (
+        echo You'd better build the main code first, then nuget will in: %CodeRoot%\build\tools\nuget.exe
+        if exist "%CodeRoot%\build\Build.cmd" echo %CodeRoot%\build\Build.cmd
+        goto :EOF
+    )
+)
+
 if not "%CppDll%" == "NoCpp" if exist %RioCodeDir% xcopy /y /i /s %RioCodeDir% %ShellDir%\..\cpp
 
 @REM Set msbuild location.
@@ -28,7 +39,7 @@ if NOT EXIST "%MSBUILDEXEDIR%\." SET MSBUILDEXEDIR=%programfiles%\MSBuild\%Visua
 if NOT EXIST "%MSBUILDEXEDIR%\." GOTO :ErrorMSBUILD
 
 SET MSBUILDEXE=%MSBUILDEXEDIR%\MSBuild.exe
-SET MSBUILDOPT=/verbosity:normal /p:WarningLevel=3
+SET MSBUILDOPT=/verbosity:minimal /p:WarningLevel=3
 
 if "%builduri%" == "" set builduri=Build.cmd
 

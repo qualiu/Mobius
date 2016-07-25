@@ -14,5 +14,5 @@ call psall -it zookeeper
 call pskill -it "cmd.*kafka-server-start|zookeeper-server-start.bat\s+config|org.apache.zookeeper.server.quorum.QuorumPeerMain"
 
 psall -it "zookeeper|Kafka" -c
-:End
+
 

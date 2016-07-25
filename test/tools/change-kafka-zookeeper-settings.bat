@@ -21,9 +21,9 @@ for /F "tokens=*" %%d in ('echo %ZOOKEEPER_LOG_ROOT%^| lzmw -x \ -o / -PAC ') do
 for /F "tokens=*" %%d in ('echo %KAFKA_LOG_ROOT%^| lzmw -x \ -o / -PAC ') do set KAFKA_LOG_ROOT_Unix=%%d
 
 set KafkaConfig=%KAFKA_ROOT%\config
-call :CheckExist %KafkaConfig%
+call :CheckExist %KafkaConfig% || exit /b 1
 
-call :CheckExist %ShellDir%\download-common-tools.bat ""
+call :CheckExist %ShellDir%\download-common-tools.bat || exit /b 1
 call %ShellDir%\download-common-tools.bat
 
 rem Use "-c" to show command, Use "-R" to replace ; No "-R" to preview replacing. No "-o" to see matching. -K" to keep backup. Just run lzmw.exe to get more.

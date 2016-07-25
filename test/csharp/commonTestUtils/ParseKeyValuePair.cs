@@ -30,7 +30,7 @@ namespace CommonTestUtils
             LineCount++;
             if (needPrintMessage)
             {
-                Logger.LogInfo($"{TestUtils.NowMilli} {this.GetType().Name} Line[{LineCount}]: {line}");
+                Logger.LogInfo($"Received Line[{LineCount}]: {line}");
             }
         }
 

@@ -1,5 +1,7 @@
 @echo off
+rem tar.exe wget.exe from : http://gnuwin32.sourceforge.net/packages.html
 rem to fix problems of bat (such as cannot find lable of sub funciton) : unix2dos *.bat
+
 SetLocal EnableExtensions EnableDelayedExpansion
 
 if "%1" == "-h"     set ToShowUsage=1
@@ -31,15 +33,16 @@ set InitTopicDataFile=%ShellDir%\data\init-kafka-data.txt
 set TopicName=test
 rem ======== setttings ========================================
 
-set TarTool=%ShellDir%\tar.exe
-call :CheckExist %TarTool% "tar.exe"
+set TarTool=%ShellDir%\gnu\bsdtar.exe
+call :CheckExist %TarTool% || exit /b 1
 
 set WGetTool=%ShellDir%\wget.exe
 
 set DownloadTool=%ShellDir%\download-file.bat
-call :CheckExist %DownloadTool% "download-file.bat"
+call :CheckExist %DownloadTool% || exit /b 1
 
-icacls %ShellDir%\*.exe /grant Everyone:RX
+call icacls %ShellDir%\*.exe /grant Everyone:RX
+call icacls %ShellDir%\gnu\*.exe /grant Everyone:RX
 
 set PATH=%PATH%;%ShellDir%
 
@@ -53,13 +56,14 @@ set KafakaUrl="https://www.apache.org/dist/kafka/0.10.0.0/%KafkaTarName%"
 set KafkaRoot=%SAVE_DIR%\%KafkaName%
 set KafkaBin=bin\windows
 set KafkaBinFull=%KafkaRoot%\%KafkaBin%
-if not exist %SAVE_DIR%\%KafkaTarName% call %DownloadTool% %KafakaUrl% %SAVE_DIR%
+if not exist "%SAVE_DIR%\%KafkaTarName%" call %DownloadTool% %KafakaUrl% %SAVE_DIR%
 if exist %KafkaRoot% (
     if "%OVERWRITE%" == "1"  rd /q /s %KafkaRoot%
 ) else (
     echo === first time initialize Kafka begin in %0 ==========
     rem %TarTool% xf %SAVE_DIR%\%KafkaTarName% -C %SAVE_DIR%
     pushd %SAVE_DIR% && %TarTool% xf %KafkaTarName% & popd
+	call :CheckExist %KafkaBinFull% || exit /b 1
     lzmw -it "\b(dataDir)\s*=.*$" -o "$1=%ZookeeperLogRootUnix%" -p %KafkaRoot%\config\zookeeper.properties -R
     lzmw -it "\b(log.dirs)\s*=.*$" -o "$1=%KafkaLogRootUnix%" -p %KafkaRoot%\config\server.properties -R
     lzmw -f "\.bat$" -it "^(\s*)#" -o "$1rem"  -rp %KafkaRoot% -R

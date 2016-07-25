@@ -14,7 +14,7 @@ if not exist %lzJar% (
     pushd %ShellDir% && call mvn package & popd
 )
 
-call :CheckExist %lzJar%
+call :CheckExist %lzJar% || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -27,10 +27,10 @@ if "%1" == "" (
 )
 
 set CodeRootDir=%ShellDir%\..\..\..
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir%
+call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
 
-call :CheckExist %SourceSocketExe%
-call :CheckExist %SPARK_HOME%\bin\spark-submit.cmd
+call :CheckExist %SourceSocketExe% || exit /b 1
+call :CheckExist %SPARK_HOME%\bin\spark-submit.cmd || exit /b 1
 
 
 set Port=9486
@@ -68,21 +68,10 @@ goto :End
 
 :CheckExist
     if not exist "%~1" (
-        echo Not exist %1
+        echo Not exist %2 : %1
         exit /b 1
     )
     goto :End
-
-
-    
-    
-::| lzmw -it "error^|exception^|fail^|arg^|\w*count\s*="
-:: test.cmd | lzmw -it "error|exception|fail|arg|\w*count|value = |(inverseSum)" -e Validation
-
-:: validation will be error 
-:: set AllArgs=-p 9486 -r 30 -b 1 -w 6 -s 2 -v 50 -c d:\tmp\checkDir -d
-
-::%SPARK_HOME%\bin\spark-submit.cmd --class lzTest.KeyValueArrayTest %lzJar% %AllArgs% 2>&1
 
 :End
 

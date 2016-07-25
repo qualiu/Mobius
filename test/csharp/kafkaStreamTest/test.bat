@@ -11,11 +11,11 @@ for %%a in ("%ExePath%") do (
 
 set CodeRootDir=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir%
+call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
 
-call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"
-call :CheckExist %ExePath% "ExePath"
-call :CheckExist %ExeDir% "ExeDir"
+call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
+call :CheckExist %ExePath% "ExePath" || exit /b 1
+call :CheckExist %ExeDir% "ExeDir" || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (

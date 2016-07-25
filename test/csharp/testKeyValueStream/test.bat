@@ -11,10 +11,10 @@ for %%a in ("%TestExePath%") do (
 
 set CodeRootDir=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir%
+call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
 
-call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"
-call :CheckExist %TestExePath% "TestExePath"
+call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
+call :CheckExist %TestExePath% "TestExePath" || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -40,3 +40,6 @@ goto :End
         echo Not exist %2 : %1
         exit /b 1
     )
+    goto :End
+    
+:End

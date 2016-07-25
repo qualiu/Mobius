@@ -42,18 +42,24 @@ namespace ReadWriteKafka
 
         [ArgDefaultValue(60), ArgDescription("Writing duration : seconds, 0 means no limit")]
         public int RunningSeconds { get; set; }
+
+        [ArgDefaultValue(100), ArgDescription("Base id")]
+        public int BaseId { get; set; }
+
+        [ArgDefaultValue(-1), ArgDescription("Max id : -1 will use default : BaseId + Rows * 0.6 ")]
+        public int MaxId { get; set; }
+
+        [ArgDefaultValue(false), ArgDescription("Only show row count if read")]
+        public bool OnlyShowCount { get; set; }
+
+        [ArgDefaultValue(6000), ArgDescription("Reading timeout in milliseconds : -1 means wait endless")]
+        public int ReadingTimeout { get; set; }
+
     }
 
     class ReadWriteKafka : BaseTestUtilLog4Net<ReadWriteKafka>
     {
         private static Random random = new Random();
-
-        private static long _TotalWrote = 0;
-        private static long TotalWrote
-        {
-            get { return Interlocked.Read(ref _TotalWrote); }
-            set { Interlocked.Exchange(ref _TotalWrote, value); }
-        }
 
         static void Main(string[] args)
         {
@@ -101,14 +107,13 @@ namespace ReadWriteKafka
             {
                 connectedTime = DateTime.Now;
                 producer.SendMessageAsync(topic, messages).Wait();
-                TotalWrote += messages.Count();
             }
 
 
             var endTime = DateTime.Now;
             if (showMesage)
             {
-                Logger.Info($"Wrote {messages.Count()}-{TotalWrote} messages into topic {topic}, used time = {endTime - beginTime}, connection used = {connectedTime - beginTime}");
+                Logger.Info($"Wrote {messages.Count()} messages into topic {topic}, used time = {endTime - beginTime}, connection used = {connectedTime - beginTime}");
             }
 
             if (showReadCommand)
@@ -120,9 +125,9 @@ namespace ReadWriteKafka
 
         static void WriteTestData(List<Uri> brokersUriList, ArgReadWriteKafka options)
         {
-            var baseId = 100;
+            var baseId = options.BaseId;
             var maxRows = Math.Min(3000, Math.Max(100, options.Rows));
-            var maxId = baseId + (int)(maxRows * 0.6);
+            var maxId = options.MaxId < baseId ? baseId + (int)(maxRows * 0.6) : options.MaxId;
             var idList = new HashSet<long>();
             for (var k = 0; k < maxId - baseId; k++)
             {
@@ -168,6 +173,7 @@ namespace ReadWriteKafka
                 if (tableIdCount.Count == oneBatch)
                 {
                     WriteTopic(brokersUriList, options.TopicIdCount, tableIdCount, true, false);
+                    rows += tableIdCount.Count;
                     tableIdCount.Clear();
                 }
 
@@ -176,7 +182,6 @@ namespace ReadWriteKafka
                     Thread.Sleep(options.Interval);
                 }
             }
-
             WriteTopic(brokersUriList, options.TopicIdCount, tableIdCount, tableIdCount.Count > 0, true);
         }
 
@@ -190,35 +195,53 @@ namespace ReadWriteKafka
 
             var beginTime = DateTime.Now;
             var connectedTime = beginTime;
-            using (var router = new BrokerRouter(new KafkaOptions(brokersUriList.ToArray())))
+            var endTime = beginTime;
+            var rowsRead = 0;
+            Action readTopicRows = () =>
             {
-                using (var consumer = new Consumer(new ConsumerOptions(options.ReadTopic, router)))
+                using (var router = new BrokerRouter(new KafkaOptions(brokersUriList.ToArray())))
                 {
-                    connectedTime = DateTime.Now;
-                    var rows = 0;
-                    foreach (var message in consumer.Consume())
+                    using (var consumer = new Consumer(new ConsumerOptions(options.ReadTopic, router)))
                     {
-                        rows++;
-                        var text = Encoding.UTF8.GetString(message.Value);
-                        if (options.ShowRowHeader)
+                        connectedTime = DateTime.Now;
+                        foreach (var message in consumer.Consume())
                         {
-                            Console.WriteLine("Row[{0}]: {1}", rows, text);
-                        }
-                        else
-                        {
-                            Console.WriteLine(text);
+                            rowsRead++;
+                            if (!options.OnlyShowCount)
+                            {
+                                var text = Encoding.UTF8.GetString(message.Value);
+                                if (options.ShowRowHeader)
+                                {
+                                    Console.WriteLine("Row[{0}]: {1}", rowsRead, text);
+                                }
+                                else
+                                {
+                                    Console.WriteLine(text);
+                                }
+                            }
+
+                            if (options.Rows > 0 && rowsRead >= options.Rows)
+                            {
+                                break;
+                            }
                         }
 
-                        if (options.Rows > 0 && rows >= options.Rows)
-                        {
-                            break;
-                        }
+                        endTime = DateTime.Now;
                     }
-
-                    var endTime = DateTime.Now;
-                    Logger.InfoFormat($"Read {rows} rows in topic {options.ReadTopic}, brokers = {options.BrokerList}, used time = {endTime - beginTime}, connection cost = {connectedTime - beginTime}");
                 }
+            };
+
+            if (options.ReadingTimeout > 0)
+            {
+                Task.Run(readTopicRows).Wait(options.ReadingTimeout);
             }
+            else
+            {
+                Task.Run(readTopicRows).Wait();
+            }
+
+            
+            Logger.InfoFormat($"Read {rowsRead} rows in topic {options.ReadTopic}, brokers = {options.BrokerList}, used time = {endTime - beginTime}, connection cost = {connectedTime - beginTime}");
         }
     }
 }

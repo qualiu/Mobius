@@ -16,8 +16,8 @@ set InitTopicDataFile=%5
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 
-call :CheckExist %KafkaBin% "kafka bin directory"
-call :CheckExist %KafkaBin%\kafka-topics.bat
+call :CheckExist %KafkaBin% "kafka bin directory" || exit /b 1
+call :CheckExist %KafkaBin%\kafka-topics.bat || exit /b 1
 
 call %KafkaBin%\kafka-topics.bat --create --zookeeper %ZookeeperConnection% --replication-factor 1 --partitions 1 --topic %TopicName%
 call %KafkaBin%\kafka-topics.bat --zookeeper %ZookeeperConnection% --list

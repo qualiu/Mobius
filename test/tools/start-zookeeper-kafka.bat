@@ -9,12 +9,12 @@ if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 set AppDir=%ShellDir%\apps
 dir /A:D /b %ShellDir%\apps\kafka* 2>nul
 if %errorlevel% NEQ 0 ( 
-    call %ShellDir%\download-kafka-zookeeper.bat %AppDir% 
+    call %ShellDir%\download-kafka-zookeeper.bat %AppDir% || exit /b 1
     sleep 9
 )
 
 for /F "tokens=*" %%d in (' dir /A:D /B %AppDir%\kafka* ') do set KafkaRoot=%AppDir%\%%d
-call :CheckExist %KafkaRoot%  "kafka"
+call :CheckExist %KafkaRoot% kafka || exit /b 1
 
 echo ========= start zookeeper and Kafka in %KafkaRoot% ======
 

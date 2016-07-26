@@ -18,7 +18,7 @@ class SumCount extends Serializable {
     this
   }
 
-  def add(addLine : Int = 0, addRdd : Int = 0, addRecord : Int = 0): SumCount = {
+  def add(addLine: Int = 0, addRdd: Int = 0, addRecord: Int = 0): SumCount = {
     lineCount += addLine
     rddCount += addRdd
     recordCount += addRecord
@@ -41,7 +41,7 @@ class SumCount extends Serializable {
     new SumCount().setCount(this.lineCount - that.lineCount, this.rddCount - that.rddCount, that.recordCount - that.recordCount)
 }
 
-class SumReduceHelper(val checkArrayBeforeSum : Boolean) extends Serializable with LogBase {
+class SumReduceHelper(val checkArrayBeforeSum: Boolean) extends Serializable with LogBase {
   def forechRDD[V](rdd: RDD[V], time: Time): SumCount = {
     val Counts = new SumCount
     Counts.rddCount += 1
@@ -56,7 +56,7 @@ class SumReduceHelper(val checkArrayBeforeSum : Boolean) extends Serializable wi
   }
 
   def SumArray(a: Array[Int], b: Array[Int]): Array[Int] = {
-    log(s"SumArray() ${TestUtil.ArrayToText("a",a)} + ${TestUtil.ArrayToText("b", b)} , checkArrayBeforeSum = ${checkArrayBeforeSum}")
+    log(s"SumArray() ${TestUtil.ArrayToText("a", a)} + ${TestUtil.ArrayToText("b", b)} , checkArrayBeforeSum = ${checkArrayBeforeSum}")
     if (checkArrayBeforeSum) {
       if (a == null || b == null) {
         return if (a == null) b else a
@@ -70,12 +70,12 @@ class SumReduceHelper(val checkArrayBeforeSum : Boolean) extends Serializable wi
     for (k <- 0 until c.length) {
       c(k) = a(k) + b(k)
     }
-    log(s"SumArray() ${TestUtil.ArrayToText("a",a)} + ${TestUtil.ArrayToText("b",b)} = ${TestUtil.ArrayToText("c",c)}")
+    log(s"SumArray() ${TestUtil.ArrayToText("a", a)} + ${TestUtil.ArrayToText("b", b)} = ${TestUtil.ArrayToText("c", c)}")
     c
   }
 
   def InverseSumArray(a: Array[Int], b: Array[Int]): Array[Int] = {
-    log(s"InverseSumArray ${TestUtil.ArrayToText("a",a)} - ${TestUtil.ArrayToText("b",b)}, checkArrayBeforeSum = ${checkArrayBeforeSum}")
+    log(s"InverseSumArray ${TestUtil.ArrayToText("a", a)} - ${TestUtil.ArrayToText("b", b)}, checkArrayBeforeSum = ${checkArrayBeforeSum}")
     if (checkArrayBeforeSum) {
       if (a == null || b == null) {
         return if (a == null) b else a
@@ -89,7 +89,7 @@ class SumReduceHelper(val checkArrayBeforeSum : Boolean) extends Serializable wi
     for (k <- 0 until c.length) {
       c(k) = a(k) - b(k)
     }
-    log(s"InverseSumArray() ${TestUtil.ArrayToText("a",a)} - ${TestUtil.ArrayToText("b",b)} = ${TestUtil.ArrayToText("c",c)}")
+    log(s"InverseSumArray() ${TestUtil.ArrayToText("a", a)} - ${TestUtil.ArrayToText("b", b)} = ${TestUtil.ArrayToText("c", c)}")
     c
   }
 }

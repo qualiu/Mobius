@@ -12,9 +12,9 @@ import scala.util.matching.Regex
   */
 
 abstract class ParseKeyValuePairBase[ValueType](val valueArrayElements: Int = 0, val needPrintMessage: Boolean = true) extends LogBase {
-//  def log(message: String): Unit = {
-//    println(s"${TestUtil.NowMilli} : ${this.getClass.getName} $message")
-//  }
+  //  def log(message: String): Unit = {
+  //    println(s"${TestUtil.NowMilli} : ${this.getClass.getName} $message")
+  //  }
 
   def parse(line: String): Tuple2[String, ValueType] = {
     throw new NotImplementedException
@@ -34,7 +34,7 @@ abstract class ParseKeyValuePairBase[ValueType](val valueArrayElements: Int = 0,
     val matched = regLine.findFirstMatchIn(line).get
     val key = matched.group("Key")
     val valueSet = """\d""".r.findAllMatchIn(matched.group("Value")).toArray
-    val values = new Array[Int](math.max(1,elements))
+    val values = new Array[Int](math.max(1, elements))
     for (k <- 0 until math.min(valueSet.length, values.length)) {
       values(k) = 1 // valueSet(k).group(0).toInt
     }

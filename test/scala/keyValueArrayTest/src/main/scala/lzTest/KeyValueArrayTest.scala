@@ -53,7 +53,7 @@ object KeyValueArrayTest extends LogBase {
       + s", countList[${countList.length}] = ${if (countList.length < 9) countList.mkString(",") else countList.take(9).mkString(", ") + ", ... , " + countList.last}")
   }
 
-  def testOneStreaming(testTime: Long, sc : SparkContext, beginTime : Date, prefix : String) : SumCount = {
+  def testOneStreaming(testTime: Long, sc: SparkContext, beginTime: Date, prefix: String): SumCount = {
     val timesInfo = " test[" + testTime + "]-" + Args4Socket.testTimes + " "
     log("============== begin of " + timesInfo + " =========================")
     val ssc = new StreamingContext(sc, Seconds(Args4Socket.batchSeconds))
@@ -99,8 +99,8 @@ object KeyValueArrayTest extends LogBase {
       val pairs = if (Args4Socket.isUnevenArray) lines.map(line => new ParseKeyValueUnevenArray(Args4Socket.elementCount).parse(line))
       else lines.map(line => new ParseKeyValueArray(Args4Socket.elementCount).parse(line)) //{ val kv = new ParseKeyValueArray(elementCount).parse(line) ; new Tuple2[String, Array[Int]]("mykey", kv._2) })
       val reducedStream = if (isByKey) pairs.reduceByKey((a, b) => new SumReduceHelper(Args4Socket.checkArray) SumArray(a, b))
-        else pairs.reduceByKeyAndWindow((a, b) => new SumReduceHelper(Args4Socket.checkArray).SumArray(a, b),
-          (a, b) => new SumReduceHelper(Args4Socket.checkArray).InverseSumArray(a, b), Seconds(Args4Socket.windowSeconds), Seconds(Args4Socket.slideSeconds))
+      else pairs.reduceByKeyAndWindow((a, b) => new SumReduceHelper(Args4Socket.checkArray).SumArray(a, b),
+        (a, b) => new SumReduceHelper(Args4Socket.checkArray).InverseSumArray(a, b), Seconds(Args4Socket.windowSeconds), Seconds(Args4Socket.slideSeconds))
       val title = if (Args4Socket.isUnevenArray) "KeyValueUnevenArray" else "KeyValueArray"
       ForEachRDD(title, reducedStream, sumCount, prefix, suffix)
     }

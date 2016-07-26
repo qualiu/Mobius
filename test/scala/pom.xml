@@ -43,6 +43,7 @@
         <module>CommonUtil</module>
         <module>keyValueArrayTest</module>
         <module>kafkaStreamTest</module>
+        <module>txtStreamTest</module>
     </modules>
 
     <properties>

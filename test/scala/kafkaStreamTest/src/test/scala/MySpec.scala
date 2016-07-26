@@ -1,4 +1,5 @@
 package lzTest
+
 //
 //class MySpecTest extends JUnit4(MySpec)
 ////class MySpecSuite extends ScalaTestSuite(MySpec)

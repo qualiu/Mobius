@@ -22,8 +22,8 @@ class SumCount extends Serializable {
     this
   }
 
-  def setCount(countAll: Int, countRdd: Int, countRecord: Int, keys : util.HashSet[String]): SumCount = {
-   setCount(countAll, countRdd, countRdd)
+  def setCount(countAll: Int, countRdd: Int, countRecord: Int, keys: util.HashSet[String]): SumCount = {
+    setCount(countAll, countRdd, countRdd)
     keySet = new util.HashSet[String]()
     if (keys != null) {
       keySet.addAll(keys)
@@ -31,19 +31,19 @@ class SumCount extends Serializable {
     this
   }
 
-  def add(addLine : Int = 0, addRdd : Int = 0, addRecord : Int = 0): SumCount = {
+  def add(addLine: Int = 0, addRdd: Int = 0, addRecord: Int = 0): SumCount = {
     lineCount += addLine
     rddCount += addRdd
     recordCount += addRecord
     this
   }
 
-  def addKey(key : String): SumCount = {
+  def addKey(key: String): SumCount = {
     keySet.add(key)
     this
   }
 
-  def addKeys(keys : util.Collection[String]) : SumCount = {
+  def addKeys(keys: util.Collection[String]): SumCount = {
     keySet.addAll(keys)
     this
   }
@@ -58,16 +58,16 @@ class SumCount extends Serializable {
   }
 
   def +(that: SumCount) =
-    new SumCount ().setCount (this.lineCount + that.lineCount, this.rddCount + that.rddCount, that.recordCount + that.recordCount, keySet).addKeys(that.keySet)
+    new SumCount().setCount(this.lineCount + that.lineCount, this.rddCount + that.rddCount, that.recordCount + that.recordCount, keySet).addKeys(that.keySet)
 
-  def -(that: SumCount) : SumCount = {
+  def -(that: SumCount): SumCount = {
     val sum = new SumCount().setCount(this.lineCount - that.lineCount, this.rddCount - that.rddCount, that.recordCount - that.recordCount, this.keySet)
     sum.keySet.removeAll(that.keySet)
     sum
   }
 }
 
-class SumReduceHelper(val checkArrayBeforeSum : Boolean = true) extends Serializable with LogBase {
+class SumReduceHelper(val checkArrayBeforeSum: Boolean = true) extends Serializable with LogBase {
   def forechRDD[V](rdd: RDD[V], time: Time): SumCount = {
     val Counts = new SumCount
     Counts.rddCount += 1
@@ -82,7 +82,7 @@ class SumReduceHelper(val checkArrayBeforeSum : Boolean = true) extends Serializ
   }
 
   def SumArray(a: Array[Int], b: Array[Int]): Array[Int] = {
-    log(s"SumArray() ${TestUtil.ArrayToText("a",a)} + ${TestUtil.ArrayToText("b", b)} , checkArrayBeforeSum = ${checkArrayBeforeSum}")
+    log(s"SumArray() ${TestUtil.ArrayToText("a", a)} + ${TestUtil.ArrayToText("b", b)} , checkArrayBeforeSum = ${checkArrayBeforeSum}")
     if (checkArrayBeforeSum) {
       if (a == null || b == null) {
         return if (a == null) b else a
@@ -96,12 +96,12 @@ class SumReduceHelper(val checkArrayBeforeSum : Boolean = true) extends Serializ
     for (k <- 0 until c.length) {
       c(k) = a(k) + b(k)
     }
-    log(s"SumArray() ${TestUtil.ArrayToText("a",a)} + ${TestUtil.ArrayToText("b",b)} = ${TestUtil.ArrayToText("c",c)}")
+    log(s"SumArray() ${TestUtil.ArrayToText("a", a)} + ${TestUtil.ArrayToText("b", b)} = ${TestUtil.ArrayToText("c", c)}")
     c
   }
 
   def InverseSumArray(a: Array[Int], b: Array[Int]): Array[Int] = {
-    log(s"InverseSumArray ${TestUtil.ArrayToText("a",a)} - ${TestUtil.ArrayToText("b",b)}, checkArrayBeforeSum = ${checkArrayBeforeSum}")
+    log(s"InverseSumArray ${TestUtil.ArrayToText("a", a)} - ${TestUtil.ArrayToText("b", b)}, checkArrayBeforeSum = ${checkArrayBeforeSum}")
     if (checkArrayBeforeSum) {
       if (a == null || b == null) {
         return if (a == null) b else a
@@ -115,7 +115,7 @@ class SumReduceHelper(val checkArrayBeforeSum : Boolean = true) extends Serializ
     for (k <- 0 until c.length) {
       c(k) = a(k) - b(k)
     }
-    log(s"InverseSumArray() ${TestUtil.ArrayToText("a",a)} - ${TestUtil.ArrayToText("b",b)} = ${TestUtil.ArrayToText("c",c)}")
+    log(s"InverseSumArray() ${TestUtil.ArrayToText("a", a)} - ${TestUtil.ArrayToText("b", b)} = ${TestUtil.ArrayToText("c", c)}")
     c
   }
 }

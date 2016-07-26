@@ -1,7 +1,8 @@
 @setlocal
 @ECHO off
 
-if "%1" == "nocpp" set CppDll=NoCpp
+set BuildConfig=%1
+if "%2" == "nocpp" set CppDll=NoCpp
 
 SET ShellDir=%~dp0
 @REM Remove trailing backslash \
@@ -21,7 +22,7 @@ if ERRORLEVEL 1 (
     )
 )
 
-if not "%CppDll%" == "NoCpp" if exist %RioCodeDir% xcopy /y /i /s %RioCodeDir% %ShellDir%\..\cpp
+if not "%CppDll%" == "NoCpp" if exist %RioCodeDir% xcopy /Y /I /S /D %RioCodeDir% %ShellDir%\..\cpp
 
 @REM Set msbuild location.
 SET VisualStudioVersion=14.0
@@ -58,25 +59,13 @@ nuget restore "%PROJ%"
 
 @if ERRORLEVEL 1 GOTO :ErrorStop
 
-@echo Build Debug ==============================
-SET STEP=Debug
+if "%BuildConfig%" == "" set BuildDebug=1
+if not "%BuildConfig%" == "" if "%BuildConfig%" == "Debug" set BuildDebug=1
+if "%BuildDebug%" == "1" call :BuildByConfig Debug
 
-SET CONFIGURATION=%STEP%
-
-SET STEP=%CONFIGURATION%
-
-"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION%;AllowUnsafeBlocks=true %MSBUILDOPT% "%PROJ%"
-@if ERRORLEVEL 1 GOTO :ErrorStop
-@echo BUILD ok for %CONFIGURATION% %PROJ%
-
-@echo Build Release ============================
-SET STEP=Release
-
-SET CONFIGURATION=%STEP%
-
-"%MSBUILDEXE%" /p:Configuration=%CONFIGURATION%;AllowUnsafeBlocks=true %MSBUILDOPT% "%PROJ%"
-@if ERRORLEVEL 1 GOTO :ErrorStop
-@echo BUILD ok for %CONFIGURATION% %PROJ%
+if "%BuildConfig%" == "" set BuildRelease=1
+if not "%BuildConfig%" == "" if "%BuildConfig%" == "Release" set BuildRelease=1
+if "%BuildRelease%" == "1" call :BuildByConfig Release
 
 if EXIST %PROJ_NAME%.nuspec (
   @echo ===== Build NuGet package for %PROJ% =====
@@ -91,15 +80,24 @@ if EXIST %PROJ_NAME%.nuspec (
 
 @GOTO :EOF
 
+:BuildByConfig
+	SET Configuration=%1
+	@echo Build %Configuration% ============================
+	"%MSBUILDEXE%" /p:Configuration=%Configuration%;AllowUnsafeBlocks=true %MSBUILDOPT% "%PROJ%"
+	@if ERRORLEVEL 1 GOTO :ErrorStop
+	@echo BUILD ok for %Configuration% %PROJ%
+	goto :EOF
+
 :ErrorMSBUILD
-set RC=1
-@echo ===== Build FAILED due to missing MSBUILD.EXE. =====
-@echo ===== Mobius requires "Developer Command Prompt for VS2013" and above =====
-exit /B %RC%
+	set RC=1
+	@echo ===== Build FAILED due to missing MSBUILD.EXE. =====
+	@echo ===== Mobius requires "Developer Command Prompt for VS2013" and above =====
+	exit /B %RC%
 
 :ErrorStop
-set RC=%ERRORLEVEL%
-if "%STEP%" == "" set STEP=%CONFIGURATION%
-@echo ===== Build FAILED for %PROJ% -- %STEP% with error %RC% - CANNOT CONTINUE =====
-exit /B %RC%
+	set RC=%ERRORLEVEL%
+	if "%STEP%" == "" set STEP=%CONFIGURATION%
+	@echo ===== Build FAILED for %PROJ% -- %STEP% with error %RC% - CANNOT CONTINUE =====
+	exit /B %RC%
+	
 :EOF

@@ -28,7 +28,7 @@ object TxtStreamTest extends LogBase {
     var needCallMap = true
 
     if (args.length < 1) {
-      println(s"Usage   : ${jar} file-directory  [file-type: default = ${fileType}]  [need-call-map() : default = ${needCallMap}")
+      println(s"Usage   : ${jar} file-directory  [file-type: default = ${fileType}]  [need-call-map() : default = ${needCallMap}]")
       println(s"Example : ${jar} D:\\cosmos  *.csv")
       return
     }
@@ -52,7 +52,7 @@ object TxtStreamTest extends LogBase {
       mappingRDD = mappingRDD.map(line => line)
     }
     mappingRDD = mappingRDD.cache()
-    log(s"RDD.count = ${mappingRDD.count()}")
+    log(s"RDD count = ${mappingRDD.count()}")
     mappingRDD.unpersist()
     log(s"Finished ${this.getClass.getCanonicalName} , used time = ${(new Date().getTime - beginTime.getTime) / 1000.0} s, needCallMap = ${needCallMap}, read = ${pathPattern}")
   }

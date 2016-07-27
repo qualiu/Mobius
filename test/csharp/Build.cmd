@@ -60,11 +60,11 @@ nuget restore "%PROJ%"
 @if ERRORLEVEL 1 GOTO :ErrorStop
 
 if "%BuildConfig%" == "" set BuildDebug=1
-if not "%BuildConfig%" == "" if "%BuildConfig%" == "Debug" set BuildDebug=1
+if not "%BuildConfig%" == "" if /I "%BuildConfig%" == "Debug" set BuildDebug=1
 if "%BuildDebug%" == "1" call :BuildByConfig Debug
 
 if "%BuildConfig%" == "" set BuildRelease=1
-if not "%BuildConfig%" == "" if "%BuildConfig%" == "Release" set BuildRelease=1
+if not "%BuildConfig%" == "" if /I "%BuildConfig%" == "Release" set BuildRelease=1
 if "%BuildRelease%" == "1" call :BuildByConfig Release
 
 if EXIST %PROJ_NAME%.nuspec (

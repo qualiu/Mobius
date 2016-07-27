@@ -1,3 +1,4 @@
+@setlocal & @where lzmw.exe >nul 2>nul || if exist "%~dp0tools\lzmw.exe" set "PATH=%PATH%;%~dp0tools"
 :: git status | lzmw -it "^\s*modified:\s+(../\w+)/.*$" -o "$1" -PAC | not-in-later-uniq nul 2>nul
 :: git status | lzmw -it "^\s*(?:modif|delet|new file)\w*\s*:\s+(../[^/]+)/.*$" -o "$1" -PC
 :: git status | lzmw -it "^\s*(modif|delet|new file)\w*\s*:\s+(../[^/]+)/.*$" -o "$2" -PC

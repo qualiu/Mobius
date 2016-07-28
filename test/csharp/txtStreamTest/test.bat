@@ -36,6 +36,7 @@ set options=%options% --conf "spark.yarn.executor.memoryOverhead=18000"
 set options=%options% --conf spark.streaming.kafka.maxRetries=20
 set options=%options% --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true
 set options=%options% --jars %CodeRootDir%\build\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar
+set options=%options% --conf spark.mobius.CSharp.socketType=Rio
 
 call %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd %options% --exe %ExeName% %CD% %AllArgs%
 

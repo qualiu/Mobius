@@ -39,4 +39,4 @@ goto :End
     goto :End
 
 :End
-
+    exit /b 0

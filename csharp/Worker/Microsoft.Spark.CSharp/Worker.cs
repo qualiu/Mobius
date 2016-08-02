@@ -18,6 +18,7 @@ using Microsoft.Spark.CSharp.Network;
 using Microsoft.Spark.CSharp.Services;
 using Microsoft.Spark.CSharp.Sql;
 using Razorvine.Pickle;
+using System.Configuration;
 
 namespace Microsoft.Spark.CSharp
 {
@@ -332,7 +333,12 @@ namespace Microsoft.Spark.CSharp
 
                 int count = 0;
                 int nullMessageCount = 0;
-                var bufferStream = new BufferedStream(networkStream, 1024 * 8); // 8k buffer
+
+                var mobiusConfig = (System.Collections.IDictionary)ConfigurationManager.GetSection("mobius");
+                var bufferConfig = mobiusConfig == null ? null : mobiusConfig["spark.mobius.network.buffersize"];
+                var bufferSize = bufferConfig == null ? 1024 * 8 : int.Parse(bufferConfig.ToString());
+
+                var bufferStream = new BufferedStream(networkStream, bufferSize); // 8k buffer
                 var funcProcessWatch = Stopwatch.StartNew();
                 foreach (var message in func(splitIndex, GetIterator(networkStream, deserializerMode)))
                 {
@@ -363,8 +369,8 @@ namespace Microsoft.Spark.CSharp
                 commandProcessWatch.Stop();
 
                 // log statistics
-                logger.LogInfo(string.Format("func process time: {0}", funcProcessWatch.ElapsedMilliseconds));
-                logger.LogInfo(string.Format("stage {0}, command process time: {1}", stageId, commandProcessWatch.ElapsedMilliseconds));
+                logger.LogInfo("func process time: {0}, spark.mobius.network.buffersize = {1}", funcProcessWatch.ElapsedMilliseconds, bufferSize);
+                logger.LogInfo("stage {0}, command process time: {1}", stageId, commandProcessWatch.ElapsedMilliseconds);
             }
             else
             {

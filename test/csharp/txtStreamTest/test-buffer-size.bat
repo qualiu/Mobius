@@ -44,7 +44,7 @@ set bufferSize=%InitBufferSize%
 for /L %%k in (1,1, %TestTimes%) do (
     set spark.app.name=%ExeName%-buffer-!bufferSize!
     lzmw -p %configFile% -it "(key=\Wspark.mobius.network.buffersize\W\s+value=\W)(\d+)" -o "${1}!bufferSize!" -R
-    call %CallBat% %DataDirectory% || copy /y %configBackup% %configFile% & exit /b 1
+    call %CallBat% %DataDirectory% 
     set /a bufferSize=!bufferSize!+%BufferIncrease%
 )
 

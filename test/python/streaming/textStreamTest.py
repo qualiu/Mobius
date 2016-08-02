@@ -8,7 +8,7 @@ from operator import add
 if __name__ == "__main__":
     argCount = len(sys.argv)
     if argCount < 2:
-        exeName=os.path.basename(__file__)
+        exeName = os.path.basename(__file__)
         sys.stderr.write("Usage:     " + exeName + "  dataDir   [file-type : default -> *.csv]\n")
         sys.stderr.write("Example-1: " + exeName + "  d:\cosmos   *.csv \n")
         sys.stderr.write("Example-2: " + exeName + "  hdfs:///common/AdsData/MUID \n");
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     print(str(datetime.now()) + " RDD count = "+ str(rdd.count()))
     rdd.unpersist()
     
-    print(str(datetime.now()) + " Used time = " + str(time.time() - beginTime) + " s.")
+    print(str(datetime.now()) + " " + os.path.basename(__file__) + " Used time = " + str(time.time() - beginTime) + " s.")
     sc.stop()
     
 

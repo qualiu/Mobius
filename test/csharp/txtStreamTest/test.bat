@@ -1,7 +1,5 @@
 @echo off
 setlocal enabledelayedexpansion
-echo ### you can set TestExePath to avoid decttion ###
-echo ### you can set HasRIO=1 to enable RIO socket ###
 set ShellDir=%~dp0
 IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 
@@ -11,14 +9,36 @@ for %%a in ("%TestExePath%") do (
     set ExeName=%%~nxa
 )
 
+set options=--name %ExeName% --num-executors 8 --executor-cores 4 --executor-memory 8G --driver-memory 12G
+set options=%options% --conf spark.streaming.nao.loadExistingFiles=true 
+set options=%options% --conf spark.streaming.kafka.maxRetries=300 
+set options=%options% --conf "spark.yarn.executor.memoryOverhead=18000"
+set options=%options% --conf spark.streaming.kafka.maxRetries=20
+set options=%options% --jars %CodeRootDir%\build\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar
+set options=%options% --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true
+if "%HasRIO%" == "1" set options=%options% --conf spark.mobius.CSharp.socketType=Rio
+
+echo ### You can set SparkOptions to avoid default local mode setting. Examples : 
+echo ### Cluster Mode : set SparkOptions=--master yarn-cluster --num-executors 50 --executor-cores 28 --executor-memory 30G --driver-memory 32G --conf spark.python.worker.connectionTimeoutMs=3000000 --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf "spark.yarn.executor.memoryOverhead=18000" --conf spark.streaming.kafka.maxRetries=20  --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true 
+echo.
+echo ### Local Mode : set SparkOptions=%options%
+echo.
+echo ### You can set TestExePath to avoid detected: %TestExePath% 
+echo ### You can set HasRIO=1 to enable RIO socket 
+
+rem set default SparkOptions if not empty %SparkOptions%
+echo ##%SparkOptions% | findstr /I /R "[0-9a-z]" >nul || set SparkOptions=%options%
+
 set CodeRootDir=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
 
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exist /b 1
+if "%SPARK_HOME%" == "" (
+    echo Not set SPARK_HOME, treat as local mode
+    call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exist /b 1
+)
 
 call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
 call :CheckExist %TestExePath% "TestExePath" || exit /b 1
-call :CheckExist %ExeDir% "ExeDir" || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -28,23 +48,8 @@ if "%1" == "" (
 )
 
 pushd %ExeDir%
-::set options=--executor-cores 2 --driver-cores 2 --executor-memory 2g --driver-memory 2g
-rem call %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd %options% --exe %ExeName% %CD% %AllArgs%
-
-set options=--name textStreamMobius --num-executors 8 --executor-cores 4 --executor-memory 8G --driver-memory 12G
-set options=%options% --conf spark.streaming.nao.loadExistingFiles=true 
-set options=%options% --conf spark.streaming.kafka.maxRetries=300 
-set options=%options% --conf "spark.yarn.executor.memoryOverhead=18000"
-set options=%options% --conf spark.streaming.kafka.maxRetries=20
-set options=%options% --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true
-set options=%options% --jars %CodeRootDir%\build\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar
-if "%HasRIO%" == "1" set options=%options% --conf spark.mobius.CSharp.socketType=Rio
-
-call %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd %options% --exe %ExeName% %CD% %AllArgs%
-
-rem --master yarn-cluster --jars D:\Spark\Mobius\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar ^
-rem --num-executors 100 --executor-cores 28 --executor-memory 30G --driver-memory 32G ^
-
+echo %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd %SparkOptions% --exe %ExeName% %CD% %AllArgs%
+call %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd %SparkOptions% --exe %ExeName% %CD% %AllArgs%
 popd
 
 goto :End

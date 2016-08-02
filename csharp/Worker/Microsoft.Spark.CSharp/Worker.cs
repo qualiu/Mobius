@@ -93,7 +93,7 @@ namespace Microsoft.Spark.CSharp
                     // than a single thread.
                     RioNative.SetUseThreadPool(true);
                 }
-                
+
                 var multiThreadWorker = new MultiThreadWorker();
                 multiThreadWorker.Run();
             }
@@ -315,7 +315,7 @@ namespace Microsoft.Spark.CSharp
                         logger.LogError("Directory " + compilationDumpDir + " dose not exist.");
                     }
                 }
-    
+
                 byte[] command = SerDe.ReadBytes(networkStream);
 
                 logger.LogDebug("command bytes read: " + command.Length);
@@ -332,6 +332,7 @@ namespace Microsoft.Spark.CSharp
 
                 int count = 0;
                 int nullMessageCount = 0;
+                var bufferStream = new BufferedStream(networkStream, 1024 * 8); // 8k buffer
                 var funcProcessWatch = Stopwatch.StartNew();
                 foreach (var message in func(splitIndex, GetIterator(networkStream, deserializerMode)))
                 {
@@ -343,7 +344,7 @@ namespace Microsoft.Spark.CSharp
                         continue;
                     }
 
-                    WriteOutput(networkStream, serializerMode, message, formatter);
+                    WriteOutput(bufferStream, serializerMode, message, formatter);
                     count++;
                     funcProcessWatch.Start();
                 }
@@ -356,8 +357,9 @@ namespace Microsoft.Spark.CSharp
                 //else:
                 //    process()
 
-                WriteDiagnosticsInfo(networkStream, bootTime, initTime);
+                WriteDiagnosticsInfo(bufferStream, bootTime, initTime);
 
+                bufferStream.Flush();
                 commandProcessWatch.Stop();
 
                 // log statistics

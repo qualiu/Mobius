@@ -18,8 +18,9 @@ namespace TxtStreamTest
 
             if (args.Length < 1 || args[0] == "-h" || args[0] == "--help")
             {
-                Console.WriteLine("Usage : {0}  text-directory  [file-type: default = {1} ]  [Call Map : default : {2}]", ExePath, fileType, isCallingMap);
-                Console.WriteLine(@"Usage : {0}  d:\cosmos      {1} ", ExePath, fileType);
+                Console.WriteLine("Usage     : {0}  Data-directory  [file-type: default = {1} ]  [Call Map : default : {2}]", ExePath, fileType, isCallingMap);
+                Console.WriteLine(@"Example-1 : {0}  D:\cosmos\download-stream\tenant\csv-2015-10-01      {1} ", ExePath, fileType);
+                Console.WriteLine(@"Example-2 : {0}  hdfs:///common/AdsData/MUID", ExePath);
                 return;
             }
 
@@ -33,7 +34,7 @@ namespace TxtStreamTest
 
             var beginTime = DateTime.Now;
 
-            var sc = new SparkContext(new SparkConf().SetAppName(nameof(TxtStreamTest)));
+            var sc = new SparkContext(new SparkConf());
             var mappingRDD = sc.TextFile(pathPattern);
 
             if (isCallingMap)

@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableDelayedExpansion
 set ShellDir=%~dp0
 IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 
@@ -28,6 +28,12 @@ echo ### You can set HasRIO=1 to enable RIO socket
 
 rem set default SparkOptions if not empty %SparkOptions%
 echo ##%SparkOptions% | findstr /I /R "[0-9a-z]" >nul || set SparkOptions=%options%
+
+rem set spark.app.name to easy lookup from cluster and debug
+if not "%spark.app.name%" == "" (
+    echo %SparkOptions% | lzmw -ix "--name" -PAC && set SparkOptions=%SparkOptions% --name %spark.app.name%
+    echo %SparkOptions% | lzmw -ix "--name" -PAC || for /F "tokens=*" %%a in ('echo %SparkOptions% ^| lzmw -it "(--name)\s+\S+" -o "$1 %spark.app.name%" -PAC ') do set SparkOptions=%%a
+)
 
 set CodeRootDir=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools

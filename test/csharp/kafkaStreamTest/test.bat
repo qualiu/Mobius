@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+SetLocal EnableDelayedExpansion
 
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
@@ -13,9 +13,9 @@ set CodeRootDir=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
 call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
 
-call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
-call :CheckExist %ExePath% "ExePath" || exit /b 1
-call :CheckExist %ExeDir% "ExeDir" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %ExePath% "ExePath" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %ExeDir% "ExeDir" || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -51,22 +51,11 @@ popd
 echo ======================================================
 echo Test tool usages just run : %ExePath%
 
-goto :End
-
-:CheckExist
-    setlocal
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    endlocal
-    goto :End
+exit /b 0
     
 :FindJarInDir
     if exist %1 (
         for /F "tokens=*" %%f in (' dir /B %1\*.jar ') do set "JarOption=%1\%%f,!JarOption!"
     )
-    goto :End
-    
-:End
-    
+    exit /b 0
+

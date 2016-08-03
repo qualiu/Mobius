@@ -5,6 +5,7 @@ rem to fix problems of bat (such as cannot find lable of sub funciton) : unix2do
 SetLocal EnableExtensions EnableDelayedExpansion
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+set CommonToolDir=%ShellDir%
 
 set AppDir=%ShellDir%\apps
 dir /A:D /b %ShellDir%\apps\kafka* 2>nul
@@ -14,7 +15,7 @@ if %errorlevel% NEQ 0 (
 )
 
 for /F "tokens=*" %%d in (' dir /A:D /B %AppDir%\kafka* ') do set KafkaRoot=%AppDir%\%%d
-call :CheckExist %KafkaRoot% kafka || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %KafkaRoot% kafka || exit /b 1
 
 echo ========= start zookeeper and Kafka in %KafkaRoot% ======
 
@@ -24,15 +25,3 @@ start %KafkaBin%\zookeeper-server-start.bat config\zookeeper.properties
 sleep 9
 start %KafkaBin%\kafka-server-start.bat config\server.properties
 popd
-
-goto :End
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-    
-:End
-

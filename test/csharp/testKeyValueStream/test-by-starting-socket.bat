@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+SetLocal EnableDelayedExpansion
 set ShellDir=%~dp0
 IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
 
@@ -16,10 +16,10 @@ set CodeRootDir=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
 call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
 
-call :CheckExist %SourceSocketExe% "SourceSocketExe" || exit /b 1
-call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"  || exit /b 1
-call :CheckExist %TestExePath% "TestExePath" || exit /b 1
-call :CheckExist %ExeDir% "ExeDir" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %SourceSocketExe% "SourceSocketExe" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"  || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %TestExePath% "TestExePath" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %ExeDir% "ExeDir" || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -51,7 +51,7 @@ echo ======================================================
 echo More source socket usages just run : %SourceSocketExe%
 echo Test tool usages just run : %TestExePath%
 
-goto :End
+exit /b 0
 
 :ExtractArgs
     if "%1" == ""  goto :End
@@ -69,15 +69,3 @@ goto :End
     )
     shift
     goto :ExtractArgs
-
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    
-    goto :End
-    
-:End
-

@@ -15,24 +15,13 @@ set InitTopicDataFile=%5
 
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+set CommonToolDir=%ShellDir%
 
-call :CheckExist %KafkaBin% "kafka bin directory" || exit /b 1
-call :CheckExist %KafkaBin%\kafka-topics.bat || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %KafkaBin% "kafka bin directory" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %KafkaBin%\kafka-topics.bat || exit /b 1
 
 call %KafkaBin%\kafka-topics.bat --create --zookeeper %ZookeeperConnection% --replication-factor 1 --partitions 1 --topic %TopicName%
 call %KafkaBin%\kafka-topics.bat --zookeeper %ZookeeperConnection% --list
 call %KafkaBin%\kafka-console-producer.bat --broker-list %KafkaBrokerConnection% --topic %TopicName% < %InitTopicDataFile%
 call %KafkaBin%\kafka-topics.bat --describe --zookeeper %ZookeeperConnection% --topic %TopicName%
 echo for test : %KafkaBin%\kafka-console-consumer --zookeeper %ZookeeperConnection% --from-beginning --topic %TopicName%
-
-goto :End
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-
-
-:End

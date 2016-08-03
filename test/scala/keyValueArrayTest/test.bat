@@ -1,5 +1,5 @@
 @echo off
-@setlocal enabledelayedexpansion
+@SetLocal EnableDelayedExpansion
 
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
@@ -14,7 +14,7 @@ if not exist %lzJar% (
     pushd %ShellDir% && call mvn package & popd
 )
 
-call :CheckExist %lzJar% || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %lzJar% || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -29,8 +29,8 @@ if "%1" == "" (
 set CodeRootDir=%ShellDir%\..\..\..
 call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
 
-call :CheckExist %SourceSocketExe% || exit /b 1
-call :CheckExist %SPARK_HOME%\bin\spark-submit.cmd || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %SourceSocketExe% || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %SPARK_HOME%\bin\spark-submit.cmd || exit /b 1
 
 
 set Port=9486
@@ -45,8 +45,7 @@ echo ======================================================
 echo More source socket usages just run : %SourceSocketExe%
 echo Test tool Usage just run : java -jar %lzJar%
 
-goto :End
-
+exit /b 0
 
 :ExtractArgs
     if "%1" == ""  goto :End
@@ -64,14 +63,3 @@ goto :End
     )
     shift
     goto :ExtractArgs
-    
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-
-:End
-

@@ -17,6 +17,7 @@ set OVERWRITE=%2
 
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+set CommonToolDir=%ShellDir%
 
 if "%SAVE_DIR%" == "" set SAVE_DIR=%ShellDir%\apps
 
@@ -34,12 +35,12 @@ set TopicName=test
 rem ======== setttings ========================================
 
 set TarTool=%ShellDir%\gnu\bsdtar.exe
-call :CheckExist %TarTool% || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %TarTool% || exit /b 1
 
 set WGetTool=%ShellDir%\wget.exe
 
 set DownloadTool=%ShellDir%\download-file.bat
-call :CheckExist %DownloadTool% || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %DownloadTool% || exit /b 1
 
 call icacls %ShellDir%\*.exe /grant Everyone:RX
 call icacls %ShellDir%\gnu\*.exe /grant Everyone:RX
@@ -63,7 +64,7 @@ if exist %KafkaRoot% (
     echo === first time initialize Kafka begin in %0 ==========
     rem %TarTool% xf %SAVE_DIR%\%KafkaTarName% -C %SAVE_DIR%
     pushd %SAVE_DIR% && %TarTool% xf %KafkaTarName% & popd
-	call :CheckExist %KafkaBinFull% || exit /b 1
+    call %CommonToolDir%\bat\check-exist-path.bat %KafkaBinFull% || exit /b 1
     lzmw -it "\b(dataDir)\s*=.*$" -o "$1=%ZookeeperLogRootUnix%" -p %KafkaRoot%\config\zookeeper.properties -R
     lzmw -it "\b(log.dirs)\s*=.*$" -o "$1=%KafkaLogRootUnix%" -p %KafkaRoot%\config\server.properties -R
     lzmw -f "\.bat$" -it "^(\s*)#" -o "$1rem"  -rp %KafkaRoot% -R
@@ -85,8 +86,7 @@ if exist %KafkaRoot% (
     popd
 )
 
-goto :End
-   
+exit /b 0
     
 :DownloadZookeeper
     rem https://www.apache.org/dist/zookeeper/zookeeper-3.4.8/zookeeper-3.4.8.tar.gz
@@ -100,16 +100,4 @@ goto :End
     ) else (
         pushd %SAVE_DIR% && %TarTool% xf %ZookeeperTarName% & popd
     )
-    goto :End
     
-    
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-
-
-:End
-

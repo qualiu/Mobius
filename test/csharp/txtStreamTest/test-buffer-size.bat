@@ -42,13 +42,15 @@ copy /y %configFile% %configBackup%
 
 set bufferSize=%InitBufferSize%
 for /L %%k in (1,1, %TestTimes%) do (
-    set spark.app.name=%ExeName%-buffer-!bufferSize!
+    if "%spark.app.name%" == "" set spark.app.name=%ExeName%-buffer-!bufferSize!
     lzmw -p %configFile% -it "(key=\Wspark.mobius.network.buffersize\W\s+value=\W)(\d+)" -o "${1}!bufferSize!" -R
     call %CallBat% %DataDirectory% 
     set /a bufferSize=!bufferSize!+%BufferIncrease%
 )
 
+echo Restore configFile : %configFile%
 copy /y %configBackup% %configFile%
+lzmw -p %configFile% -it "(key=\Wspark.mobius.network.buffersize\W\s+value=\W)(\d+)"
 goto :End
 
 :CheckExist

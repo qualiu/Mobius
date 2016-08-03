@@ -3,6 +3,7 @@ rem to fix problems of bat (such as cannot find lable of sub funciton) : unix2do
 SetLocal EnableExtensions EnableDelayedExpansion
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+set CommonToolDir=%ShellDir%
 set PATH=%PATH%;%ShellDir%
 
 if [%1] == [] (
@@ -21,9 +22,9 @@ for /F "tokens=*" %%d in ('echo %ZOOKEEPER_LOG_ROOT%^| lzmw -x \ -o / -PAC ') do
 for /F "tokens=*" %%d in ('echo %KAFKA_LOG_ROOT%^| lzmw -x \ -o / -PAC ') do set KAFKA_LOG_ROOT_Unix=%%d
 
 set KafkaConfig=%KAFKA_ROOT%\config
-call :CheckExist %KafkaConfig% || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %KafkaConfig% || exit /b 1
 
-call :CheckExist %ShellDir%\download-common-tools.bat || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %ShellDir%\download-common-tools.bat || exit /b 1
 call %ShellDir%\download-common-tools.bat
 
 rem Use "-c" to show command, Use "-R" to replace ; No "-R" to preview replacing. No "-o" to see matching. -K" to keep backup. Just run lzmw.exe to get more.
@@ -53,16 +54,3 @@ if not [%KAFKA_LOG_ROOT%] == [] (
     %lzmw% -p %KafkaConfig%\server.properties -it "\b(log.dirs)\s*=.*" %ReplaceTo% "$1=%KAFKA_LOG_ROOT_Unix%" 
     echo.
 )
-
-goto :End
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-
-
-:End
-

@@ -1,9 +1,10 @@
 @echo off
-setlocal EnableDelayedExpansion
+SetLocal EnableDelayedExpansion
 set ShellDir=%~dp0
-IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+set CommonToolDir=%ShellDir%\..\..\tools
 set CallBat=%ShellDir%\test.bat
-call :CheckExist %CallBat%
+call %CommonToolDir%\bat\check-exist-path.bat %CallBat%
 
 if "%1" == "" (
     echo #################### Usage of %CallBat% ##################################
@@ -26,7 +27,7 @@ if "%BufferIncrease%" == "" set BufferIncrease=%InitBufferSize%
 if "%TestTimes%" == "" set TestTimes=1
 
 if "%TestExePath%"=="" for /f %%g in (' for /R %ShellDir% %%f in ^( *.exe ^) do @echo %%f ^| findstr /I /C:vshost /V ^| findstr /I /C:obj /V ') do set TestExePath=%%g
-call :CheckExist "%TestExePath%" "TestExePath" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat "%TestExePath%" "TestExePath" || exit /b 1
 
 for %%a in ("%TestExePath%") do ( 
     set ExeDir=%%~dpa
@@ -36,7 +37,7 @@ for %%a in ("%TestExePath%") do (
 IF %ExeDir:~-1%==\ SET ExeDir=%ExeDir:~0,-1%
 
 set configFile=%ExeDir%\CSharpWorker.exe.config
-call :CheckExist %configFile% || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %configFile% || exit /b 1
 set configBackup=%configFile%-lzbackup
 copy /y %configFile% %configBackup%
 
@@ -51,14 +52,3 @@ for /L %%k in (1,1, %TestTimes%) do (
 echo Restore configFile : %configFile%
 copy /y %configBackup% %configFile%
 lzmw -p %configFile% -it "(key=\Wspark.mobius.network.buffersize\W\s+value=\W)(\d+)"
-goto :End
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-    
-:End
-    

@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableDelayedExpansion
+SetLocal EnableDelayedExpansion
 
 set localModeOptions=--num-executors 8 --executor-cores 8 --executor-memory 8G --driver-memory 8G  --conf "spark.yarn.executor.memoryOverhead=18000"
 echo ### You can set SparkOptions to avoid default like : 
@@ -27,8 +27,8 @@ for %%a in ("%TestExePath%") do (
     set ExeName=%%~nxa
 )
 
-call :CheckExist %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
-call :CheckExist %TestExePath% "TestExePath" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %TestExePath% "TestExePath" || exit /b 1
 
 set AllArgs=%*
 if "%1" == "" (
@@ -42,16 +42,3 @@ echo %SPARK_HOME%\bin\spark-submit.cmd %SparkOptions% %ExeName% %AllArgs%
 call %SPARK_HOME%\bin\spark-submit.cmd %SparkOptions% %ExeName% %AllArgs%
 popd
 
-goto :End
-
-:CheckExist
-    setlocal
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    endlocal
-    goto :End
-    
-:End
-    

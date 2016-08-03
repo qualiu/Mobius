@@ -9,7 +9,7 @@ if "%1" == "" (
 set MOBIUS_CODE_ROOT=%1
 set OVERWRITE_ENV=%2
 
-call :CheckExist %MOBIUS_CODE_ROOT%\build\tools "mobius build tools directory" || exit /b 1
+call %~dp0\bat\check-exist-path.bat %MOBIUS_CODE_ROOT%\build\tools "mobius build tools directory" || exit /b 1
 
 for /F "tokens=*" %%d in (' dir /A:D /B %MOBIUS_CODE_ROOT%\build\tools\spark-* ') do set SparkDir=%MOBIUS_CODE_ROOT%\build\tools\%%d
 
@@ -28,15 +28,3 @@ if "%OVERWRITE_ENV%" == "1" (
     if not exist "%HADOOP_HOME%" set HADOOP_HOME=%MOBIUS_CODE_ROOT%\build\tools\winutils
     if not exist "%SPARKCLR_HOME%" set SPARKCLR_HOME=%MOBIUS_CODE_ROOT%\build\runtime
 )
-
-goto :End
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-
-:End
-    exit /b 0

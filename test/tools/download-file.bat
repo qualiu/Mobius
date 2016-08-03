@@ -14,23 +14,12 @@ set SAVE_DIR=%2
 
 set ShellDir=%~dp0
 if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+set CommonToolDir=%ShellDir%
 
 set WgetExe=%ShellDir%\gnu\wget.exe
 
-call :CheckExist %WgetExe% || exit /b 1
+call %CommonToolDir%\bat\check-exist-path.bat %WgetExe% || exit /b 1
 
 if not exist %SAVE_DIR% md %SAVE_DIR%
 
 %WgetExe% --no-check-certificate "%Url%" -P %SAVE_DIR%
-
-goto :End
-
-:CheckExist
-    if not exist "%~1" (
-        echo Not exist %2 : %1
-        exit /b 1
-    )
-    goto :End
-
-:End
-    

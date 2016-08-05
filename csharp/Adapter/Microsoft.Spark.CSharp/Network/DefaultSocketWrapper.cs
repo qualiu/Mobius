@@ -76,7 +76,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// </remarks>
         public Stream GetStream()
         {
-            return new NetworkStream(innerSocket);
+            return new BufferedStream(new NetworkStream(innerSocket), 20480); // use 20480 from test result currently
         }
 
         /// <summary>

@@ -11,18 +11,12 @@ for %%a in ("%TestExePath%") do (
     set ExeName=%%~nxa
 )
 
-if not "%spark.app.name%" == "" (
-    set appNameOption=--name %spark.app.name%
-) else (
-    if not "%ExeName%" == "" set appNameOption=--name %ExeName%
-)
-
-set DefaultOptions=--num-executors 8 --executor-cores 4 --executor-memory 8G --driver-memory 10G --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf "spark.yarn.executor.memoryOverhead=18000" --conf spark.streaming.kafka.maxRetries=20 --jars %CodeRootDir%\build\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true %appNameOption%
+set DefaultOptions=--num-executors 8 --executor-cores 4 --executor-memory 8G --driver-memory 10G --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf spark.yarn.executor.memoryOverhead=18000 --conf spark.streaming.kafka.maxRetries=20 --jars %CodeRootDir%\build\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true
 
 if "%HasRIO%" == "1" set DefaultOptions=%DefaultOptions% --conf spark.mobius.CSharp.socketType=Rio
 
 echo ### You can set SparkOptions to avoid default local mode setting. Examples :
-echo ### Cluster Mode : set SparkOptions=--master yarn-cluster --num-executors 100 --executor-cores 28 --executor-memory 30G --driver-memory 32G --conf spark.python.worker.connectionTimeoutMs=3000000 --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf "spark.yarn.executor.memoryOverhead=18000" --conf spark.streaming.kafka.maxRetries=20  --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true %appNameOption%
+echo ### Cluster Mode : set SparkOptions=--master yarn-cluster --num-executors 100 --executor-cores 28 --executor-memory 30G --driver-memory 32G --conf spark.python.worker.connectionTimeoutMs=3000000 --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf spark.yarn.executor.memoryOverhead=18000 --conf spark.streaming.kafka.maxRetries=20  --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true
 echo.
 echo ### Local Mode : set SparkOptions=%DefaultOptions%
 echo.
@@ -31,15 +25,25 @@ echo ### You can set HasRIO=1 to enable RIO socket
 
 rem set default SparkOptions if not empty %SparkOptions%
 echo ##%SparkOptions% | findstr /I /R "[0-9a-z]" >nul || set SparkOptions=%DefaultOptions%
+rem append name to make application name more clear
+for /F "tokens=*" %%a in ('echo %SparkOptions% ^| lzmw -it "--([a-z])\w+-(\w)\w+\S*\s+(\d+\w)\w*" -o "-$1$2-$3" -PAC ^| lzmw -it "--\S+\s+\S+(\s*\w+)" -o "" -PAC -a ^| lzmw -t "\s+" -o "_" -PAC') do set appendName=%%a
 
-echo ## You can set spark.app.name to easy lookup from cluster and debug , current : %spark.app.name%
+if not "%spark.app.name%" == "" (
+    set appNameOption=--name %spark.app.name%
+) else (
+    if not "%ExeName%" == "" set appNameOption=--name %ExeName%__%appendName%
+)
+
+echo ## You can set spark.app.name to easy lookup from cluster and debug , current : spark.app.name=%spark.app.name%  ;  %appNameOption%
 if not "%spark.app.name%" == "" (
     rem for /F "tokens=*" %%a in ('echo %SparkOptions% ^| lzmw -it "--name\s+(\S+|"[^\"]+")" -o "" -PAC ') do set SparkOptions=%%
     for /F "tokens=*" %%a in ('echo %SparkOptions% ^| lzmw -it "--name\s+(\S+)" -o "" -PAC ') do set SparkOptions=%%a
     call set SparkOptions=!SparkOptions! --name %spark.app.name%
 )
 
-echo SparkOptions=%SparkOptions%
+echo %SparkOptions% | findstr /I /R "\s*--name[^a-z0-9_-]" >nul || set SparkOptions=%SparkOptions% %appNameOption%
+
+echo Current SparkOptions=%SparkOptions%
 
 if "%SPARK_HOME%" == "" (
     echo Not set SPARK_HOME, treat as local mode

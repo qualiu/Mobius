@@ -1,9 +1,9 @@
 @echo off
 SetLocal EnableDelayedExpansion
 
-set localModeOptions=--num-executors 8 --executor-cores 8 --executor-memory 8G --driver-memory 8G  --conf "spark.yarn.executor.memoryOverhead=18000"
+set localModeOptions=--num-executors 8 --executor-cores 8 --executor-memory 8G --driver-memory 8G  --conf spark.yarn.executor.memoryOverhead=18000
 echo ### You can set SparkOptions to avoid default like : 
-echo ### Cluster Mode : set SparkOptions=--master yarn-cluster --num-executors 100 --executor-cores 28 --executor-memory 30G --driver-memory 32G --conf spark.python.worker.connectionTimeoutMs=3000000 --conf spark.streaming.kafka.maxRetries=300 --conf "spark.yarn.executor.memoryOverhead=18000" --conf spark.streaming.kafka.maxRetries=20 --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=d:/data/anaconda2/python.exe
+echo ### Cluster Mode : set SparkOptions=--master yarn-cluster --num-executors 100 --executor-cores 28 --executor-memory 30G --driver-memory 32G --conf spark.python.worker.connectionTimeoutMs=3000000 --conf spark.streaming.kafka.maxRetries=300 --conf spark.yarn.executor.memoryOverhead=18000 --conf spark.streaming.kafka.maxRetries=20 --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=d:/data/anaconda2/python.exe
 echo.
 echo ### Local Mode : Set SparkOptions=%localModeOptions%
 rem set default SparkOptions if not empty %SparkOptions%

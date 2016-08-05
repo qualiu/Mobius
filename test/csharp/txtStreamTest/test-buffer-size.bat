@@ -1,7 +1,7 @@
 @echo off
 SetLocal EnableDelayedExpansion
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%\..\..\tools
 set CallBat=%ShellDir%\test.bat
 call %CommonToolDir%\bat\check-exist-path.bat %CallBat%
@@ -34,7 +34,7 @@ for %%a in ("%TestExePath%") do (
     set ExeName=%%~nxa
 )
 
-IF %ExeDir:~-1%==\ SET ExeDir=%ExeDir:~0,-1%
+if %ExeDir:~-1%==\ set ExeDir=%ExeDir:~0,-1%
 
 set configFile=%ExeDir%\CSharpWorker.exe.config
 call %CommonToolDir%\bat\check-exist-path.bat %configFile% || exit /b 1

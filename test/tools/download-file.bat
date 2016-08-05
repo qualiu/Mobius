@@ -13,7 +13,7 @@ set Url=%~1
 set SAVE_DIR=%2
 
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%
 
 set WgetExe=%ShellDir%\gnu\wget.exe

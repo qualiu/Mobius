@@ -1,50 +1,37 @@
 @echo off
-@SetLocal EnableDelayedExpansion
-
+SetLocal EnableDelayedExpansion
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
-
-set CodeRootDir=%ShellDir%\..\..\..
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%\..\..\tools
+call %CommonToolDir%\check-set-tool-path.bat
 
-set lzJar=%ShellDir%\target\TxtStreamTestOneJar.jar
-if not exist %lzJar% (
+set TestJarPath=%ShellDir%\target\TxtStreamTestOneJar.jar
+if not exist %TestJarPath% (
     pushd %ShellDir% && call mvn package & popd
 )
 
-call %CommonToolDir%\bat\check-exist-path.bat %lzJar% || exit /b 1
-
-if not "%spark.app.name%" == "" (
-    set appNameOption=--name %spark.app.name%
-) else (
-    if not "%ExeName%" == "" set appNameOption=--name %ExeName%
+if "%1" == "" (
+    echo No parameter, Usage as following, run : %TestJarPath%
+    call java -jar %TestJarPath%
+    exit /b 0
 )
 
-set DefaultOptions=--num-executors 8 --executor-cores 4 --executor-memory 8G --driver-memory 10G --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf spark.yarn.executor.memoryOverhead=18000 --conf spark.streaming.kafka.maxRetries=20 --jars %CodeRootDir%\build\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true %appNameOption%
+call %CommonToolDir%\bat\check-exist-path.bat %TestJarPath% || exit /b 1
+call %CommonToolDir%\bat\find-TestExePath-in.bat %TestJarPath%
 
-echo ### You can set SparkOptions to avoid default local mode setting. Examples :
-echo ### Cluster Mode : set SparkOptions=--master yarn-cluster --num-executors 100 --executor-cores 28 --executor-memory 30G --driver-memory 32G --conf spark.python.worker.connectionTimeoutMs=3000000 --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf spark.yarn.executor.memoryOverhead=18000 --conf spark.streaming.kafka.maxRetries=20  --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true %appNameOption%
-echo.
-echo ### Local Mode : set SparkOptions=%DefaultOptions%
-echo.
+set SparkLocalOptions=--num-executors 8 --executor-cores 4 --executor-memory 8G --driver-memory 10G --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf spark.yarn.executor.memoryOverhead=18000 --conf spark.streaming.kafka.maxRetries=20 --jars %MobiusCodeRoot%\build\dependencies\spark-streaming-kafka-assembly_2.10-1.6.1.jar --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true
 
-rem set default SparkOptions if not empty %SparkOptions%
-echo ##%SparkOptions% | findstr /I /R "[0-9a-z]" >nul || set SparkOptions=%DefaultOptions%
+set SparkClusterOptions=--master yarn-cluster --num-executors 100 --executor-cores 28 --executor-memory 30G --driver-memory 32G --conf spark.python.worker.connectionTimeoutMs=3000000 --conf spark.streaming.nao.loadExistingFiles=true --conf spark.streaming.kafka.maxRetries=300 --conf spark.yarn.executor.memoryOverhead=18000 --conf spark.streaming.kafka.maxRetries=20  --conf spark.mobius.streaming.kafka.CSharpReader.enabled=true
 
-echo ## You can set spark.app.name to easy lookup from cluster and debug , current : %spark.app.name%
-if not "%spark.app.name%" == "" (
-    rem for /F "tokens=*" %%a in ('echo %SparkOptions% ^| lzmw -it "--name\s+(\S+|"[^\"]+")" -o "" -PAC ') do set SparkOptions=%%
-    for /F "tokens=*" %%a in ('echo %SparkOptions% ^| lzmw -it "--name\s+(\S+)" -o "" -PAC ') do set SparkOptions=%%a
-    call set SparkOptions=!SparkOptions! --name %spark.app.name%
-)
+call %CommonToolDir%\bat\set-SparkOptions-by.bat
 
-echo SparkOptions=%SparkOptions%
+echo. & echo Current SparkOptions=%SparkOptions% & echo.
 
 if "%SPARK_HOME%" == "" (
-    echo Not set SPARK_HOME, treat as local mode
-    call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exist /b 1
+    echo Not set SPARK_HOME , treat as local mode
+    call %CommonToolDir%\set-local-sparkCLR-env.bat %MobiusCodeRoot% || exist /b 1
 )
 
 call %CommonToolDir%\bat\check-exist-path.bat %SPARK_HOME%\bin\spark-submit.cmd || exit /b 1
 
-call %SPARK_HOME%\bin\spark-submit.cmd %SparkOptions% --class lzTest.TxtStreamTest %lzJar% %*
+call %SPARK_HOME%\bin\spark-submit.cmd %SparkOptions% --class lzTest.TxtStreamTest %TestJarPath% %*

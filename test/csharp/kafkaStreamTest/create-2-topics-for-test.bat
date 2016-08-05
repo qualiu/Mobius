@@ -1,7 +1,7 @@
 @echo off
 SetLocal EnableDelayedExpansion
 set ShellDir=%~dp0
-IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%\..\..\tools
 
 set KafkaToolDir=%ShellDir%\..\ReadWriteKafka

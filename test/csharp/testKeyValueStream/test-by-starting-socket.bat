@@ -1,7 +1,7 @@
 @echo off
 SetLocal EnableDelayedExpansion
 set ShellDir=%~dp0
-IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 
 set SocketCodeDir=%ShellDir%\..\SourceLinesSocket
 for /f %%g in (' for /R %SocketCodeDir% %%f in ^(*.exe^) do @echo %%f ^| findstr /I /C:vshost /V ^| findstr /I /C:obj /V ') do set SourceSocketExe=%%g
@@ -12,9 +12,9 @@ for %%a in ("%TestExePath%") do (
     set ExeName=%%~nxa
 )
 
-set CodeRootDir=%ShellDir%\..\..\..
+set MobiusCodeRoot=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
+call %CommonToolDir%\set-local-sparkCLR-env.bat %MobiusCodeRoot% || exit /b 1
 
 call %CommonToolDir%\bat\check-exist-path.bat %SourceSocketExe% "SourceSocketExe" || exit /b 1
 call %CommonToolDir%\bat\check-exist-path.bat %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd"  || exit /b 1

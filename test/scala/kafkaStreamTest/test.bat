@@ -2,7 +2,7 @@
 @SetLocal EnableDelayedExpansion
 
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 
 set CommonToolDir=%ShellDir%\..\..\tools
 
@@ -12,8 +12,8 @@ if not exist %lzJar% (
 )
 
 call %CommonToolDir%\bat\check-exist-path.bat %lzJar% || exit /b 1
-set CodeRootDir=%ShellDir%\..\..\..
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exit /b 1
+set MobiusCodeRoot=%ShellDir%\..\..\..
+call %CommonToolDir%\set-local-sparkCLR-env.bat %MobiusCodeRoot% || exit /b 1
 
 call %CommonToolDir%\bat\check-exist-path.bat %SPARK_HOME%\bin\spark-submit.cmd || exit /b 1
 

@@ -2,7 +2,7 @@
 rem to fix problems of bat (such as cannot find lable of sub funciton) : unix2dos *.bat
 SetLocal EnableExtensions EnableDelayedExpansion
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%
 set PATH=%PATH%;%ShellDir%
 
@@ -12,7 +12,7 @@ if [%1] == [] (
     exit /b 0
 )
 
-SET KAFKA_ROOT=%1
+set KAFKA_ROOT=%1
 set ZOOKEEPER_PORT=%2
 set KAFKA_PORT=%3
 set ZOOKEEPER_LOG_ROOT=%4

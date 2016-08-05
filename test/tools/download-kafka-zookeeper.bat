@@ -16,7 +16,7 @@ set SAVE_DIR=%1
 set OVERWRITE=%2
 
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%
 
 if "%SAVE_DIR%" == "" set SAVE_DIR=%ShellDir%\apps

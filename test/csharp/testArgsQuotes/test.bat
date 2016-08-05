@@ -1,7 +1,7 @@
 @echo off
 SetLocal EnableDelayedExpansion
 set ShellDir=%~dp0
-IF %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 
 for /f %%g in (' for /R %ShellDir% %%f in ^( *.exe ^) do @echo %%f ^| findstr /I /C:vshost /V ^| findstr /I /C:obj /V ') do set ExePath=%%g
 for %%a in ("%ExePath%") do ( 
@@ -9,10 +9,10 @@ for %%a in ("%ExePath%") do (
     set ExeName=%%~nxa
 )
 
-set CodeRootDir=%ShellDir%\..\..\..
+set MobiusCodeRoot=%ShellDir%\..\..\..
 set CommonToolDir=%ShellDir%\..\..\tools
 
-call %CommonToolDir%\set-sparkCLR-env.bat %CodeRootDir% || exist /b 1
+call %CommonToolDir%\set-local-sparkCLR-env.bat %MobiusCodeRoot% || exist /b 1
 
 call %CommonToolDir%\bat\check-exist-path.bat %SPARKCLR_HOME%\scripts\sparkclr-submit.cmd "sparkclr-submit.cmd" || exit /b 1
 call %CommonToolDir%\bat\check-exist-path.bat %ExePath% "ExePath" || exit /b 1

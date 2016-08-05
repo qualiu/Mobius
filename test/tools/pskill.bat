@@ -17,7 +17,7 @@ if "%~1" == "" (
 set allArgs=%*
 set allArgs=%allArgs:|= %
 set allArgs=%allArgs:"=%
-@SET "NotNumber=" & for /f "delims=0123456789 " %%a in ("%allArgs%") do @set NotNumber=%%a
+@set "NotNumber=" & for /f "delims=0123456789 " %%a in ("%allArgs%") do @set NotNumber=%%a
 
 if defined NotNumber (
     rem echo Kill process by pid list: %*

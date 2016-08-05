@@ -3,7 +3,7 @@ rem pskill -it "zookeeper|kafka"
 
 SetLocal EnableExtensions EnableDelayedExpansion
 @set ShellDir=%~dp0
-@if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+@if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 @set PATH=%PATH%;%ShellDir%
 echo ==== stop Kafka ===============================
 call psall -it kafka.kafka

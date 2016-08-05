@@ -4,7 +4,7 @@ rem to fix problems of bat (such as cannot find lable of sub funciton) : unix2do
 :: lzmw -f "\.bat$" -it "^\s*(@?echo)\s+on\b" -o "$1 off" -N 9 -R -p .
 SetLocal EnableExtensions EnableDelayedExpansion
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%
 
 set AppDir=%ShellDir%\apps

@@ -14,7 +14,7 @@ set TopicName=%4
 set InitTopicDataFile=%5
 
 set ShellDir=%~dp0
-if %ShellDir:~-1%==\ SET ShellDir=%ShellDir:~0,-1%
+if %ShellDir:~-1%==\ set ShellDir=%ShellDir:~0,-1%
 set CommonToolDir=%ShellDir%
 
 call %CommonToolDir%\bat\check-exist-path.bat %KafkaBin% "kafka bin directory" || exit /b 1

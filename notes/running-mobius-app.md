@@ -53,7 +53,7 @@ The steps to debug a Mobius driver program are:
 ```
 #### Instructions for Mobius versions 1.6.200 or later
 * Syntax to launch CSharpBackend in debug mode is `sparkclr-submit.cmd debug <port number>`. Port number is optional. 
-  * If the port number is not specified, default port number will be used and there is no need to set that in App.Config using the key `CSharpBackendPortNumber`.
+  * If the port number is not specified, default port number (5567) will be used and there is no need to set that in App.Config using the key `CSharpBackendPortNumber`.
   * If the port number is specified, it will be used when launching the CSharpBackend. This port number should be set in App.Config using the key `CSharpBackendPortNumber`
   * If the port number specified is 0, a random port number will be used in CSharpBackend. This behavior is same as in Mobius releases prior to 1.6.200. This port number should be set in App.Config using the key `CSharpBackendPortNumber`
 
@@ -132,8 +132,8 @@ Instructions to run Mobius applications in Linux are available at [linux-instruc
 ## Running Mobius Examples in Local Mode
 | Type          | Examples      |
 | ------------- |--------------|
-| Batch | <ul><li>[Pi](#pi-example-batch)</li><li>[Word Count](#wordcount-example-batch)</li></ul> |
-| SQL | <ul><li>[JDBC](#jdbc-example-sql)</li><li>[Spark-XML](#spark-xml-example-sql)</li><li>[Hive](#hive-example-sql)</li><li>[Cassandra](#cassandra-example-sql)</li></ul> |
+| Batch | <ul><li>[Pi](#pi-example-batch)</li><li>[Word Count](#wordcount-example-batch)</li><li>[Word Count (F#)](#wordcount-example---f-batch)</li></ul> |
+| SQL | <ul><li>[JDBC](#jdbc-example-sql)</li><li>[Spark-XML](#spark-xml-example-sql)</li><li>[Hive](#hive-example-sql)</li><li>[Cassandra](#cassandra-example-sql)</li><li>[JSON (F#)](#json-example---f-sql)</li></ul> |
 | Streaming | <ul><li>[Kafka](#kafka-example-streaming)</li><li>[EventHubs](#eventhubs-example-streaming)</li><li>[HDFS Word Count](#hdfswordcount-example-streaming)</li></ul> |
 
 The following sample commands show how to run Mobius examples in local mode. Using the instruction above, the following sample commands can be tweaked to run in other modes
@@ -144,7 +144,18 @@ The following sample commands show how to run Mobius examples in local mode. Usi
 Computes the _approximate_ value of Pi using two appropaches and displays the value.
 
 ### WordCount Example (Batch)
-* Run `sparkclr-submit.cmd --exe SparkClrPi.exe C:\Git\Mobius\examples\Batch\WordCount\bin\Debug <inputFile>`
+* Run `sparkclr-submit.cmd --exe SparkClrPi.exe C:\Git\Mobius\examples\Batch\WordCount\bin\Debug <InputFilePath>`
+
+`InputFilePath` should be in one of the following formats:
+* `hdfs://path/to/inputfile`
+* `file:///C:/path/to/inputfile`
+
+### WordCount Example - F# (Batch)
+* Run `sparkclr-submit.cmd --exe WordCountFSharp.exe C:\Git\Mobius\examples\fsharp\WordCount\bin\Debug <InputFilePath>`
+
+`InputFilePath` should be in one of the following formats:
+* `hdfs://path/to/inputfile`
+* `file:///C:/path/to/inputfile`
 
 ### JDBC Example (Sql)
 * Download a JDBC driver for the SQL Database you want to use
@@ -176,6 +187,15 @@ Reads data from a csv file, creates a Hive table and reads data from it
 * **Note** - If you created keyspace and tables with different names than what is in the CQL in the example or do not have Cassandra in localhost, you need to pass arguments to the example `sparkclr-submit.cmd --jars <jar files used for using Cassandra in Spark> --exe CassandraDataFrameExample.exe C:\Git\Mobius\examples\Sql\CassandraDataFrame\bin\Debug <host name> <keyspace name> <users table name> <filtered users table name>`
 
 This sample reads data from a table, displays results in the console, performs filter on dataframe and writes results to another table
+
+### JSON Example - F# (Sql)
+* Run `sparkclr-submit.cmd --exe JsonDataFrame.exe C:\Git\Mobius\examples\fsharp\JsonDataFrame\bin\Debug <InputFilePath>`
+
+A file named data.json available in the same location as JsonDataFrame.exe and it may be used when running the example
+
+`InputFilePath` should be in one of the following formats:
+* `hdfs://path/to/inputfile`
+* `file:///C:/path/to/inputfile`
 
 ### EventHubs Example (Streaming)
 * Get the following jar files

@@ -494,7 +494,8 @@ namespace Microsoft.Spark.CSharp.Network
 
             if (status != (int) SocketError.Success)
             {
-                logger.LogError("Socket receive operation failed with error {0}", status);
+                logger.LogError("Socket [{0}] receive operation failed with error code [{1}]",
+                    connectionId, status);
                 context.Data.Release();
                 return;
             }
@@ -560,7 +561,8 @@ namespace Microsoft.Spark.CSharp.Network
             sendStatusQueue.Add(status);
             if (status != (int)SocketError.Success)
             {
-                logger.LogError("Socket send operation failed with error {0}", status);
+                logger.LogError("Socket [{0}] send operation failed with error {1}",
+                    connectionId, status);
                 context.Data.Release();
                 return;
             }

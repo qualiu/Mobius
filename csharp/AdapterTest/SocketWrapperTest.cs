@@ -54,20 +54,24 @@ namespace AdapterTest
                         // Send echo one byte
                         byte[] oneBytes = { (byte)oneByte };
                         s.Write(oneBytes, 0, oneBytes.Length);
+                        s.Flush();
                         
                         Thread.SpinWait(0);
 
                         // Send more bytes to test ReadByte() do not cause failures
                         s.Write(bytes, 0, bytesRec);
+                        s.Flush();
 
                         // Keep sending to ensure no memory leak
                         var longBytes = Encoding.UTF8.GetBytes(new string('x', 8192));
                         for (int i = 0; i < 1000; i++)
                         {
                             s.Write(longBytes, 0, longBytes.Length);
+                            s.Flush();
                         }
                         byte[] msg = Encoding.ASCII.GetBytes("This is a test<EOF>");
                         s.Write(msg, 0, msg.Length);
+                        s.Flush();
 
                         // Receive echo byte.
                         s.ReadByte();
@@ -101,6 +105,7 @@ namespace AdapterTest
             {
                 // Send message
                 s.Write(clientMsgBytes, 0, clientMsgBytes.Length);
+                s.Flush();
                 // Receive echo message
                 var bytes = new byte[1024];
                 var bytesRec = s.Read(bytes, 0, bytes.Length);
@@ -111,6 +116,7 @@ namespace AdapterTest
                 // Send one byte
                 byte[] oneBytes = { 1 };
                 s.Write(oneBytes, 0, oneBytes.Length);
+                s.Flush();
 
                 // Receive echo message
                 var oneByte = s.ReadByte();
@@ -132,6 +138,7 @@ namespace AdapterTest
                 }
                 // send echo bytes
                 s.Write(oneBytes, 0, oneBytes.Length);
+                s.Flush();
             }
 
             clientSock.Close();

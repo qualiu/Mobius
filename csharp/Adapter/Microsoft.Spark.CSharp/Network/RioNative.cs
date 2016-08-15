@@ -213,7 +213,7 @@ namespace Microsoft.Spark.CSharp.Network
                         }
 
                         var socketException = new SocketException(result.Status);
-                        Logger.LogError("Failed to lookup socket [{0}] from SocketTable with status [{1}] and BytesTransferred [{2}] - Error Message: {3}.",
+                        Logger.LogWarn("Failed to lookup socket [{0}] from SocketTable with status [{1}] and BytesTransferred [{2}] - Error Message: {3}.",
                             result.ConnectionId, result.Status, result.BytesTransferred, socketException.Message);
                     }
                 }

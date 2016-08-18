@@ -167,7 +167,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <returns>Number of bytes we read.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            logger.LogInfo("this={0} Read() buffer = {1}, offset={2}, count={3}, recvDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, recvDataCache);
+            logger.LogDebug("this={0} Read() buffer = {1}, offset={2}, count={3}, recvDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, recvDataCache);
             try
             {
                 if (recvDataCache == null)
@@ -220,7 +220,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <param name="count">Number of bytes to write.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            logger.LogInfo("this={0} Write() buffer = {1}, offset={2}, count={3}, sendDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, sendDataCache);
+            logger.LogDebug("this={0} Write() buffer = {1}, offset={2}, count={3}, sendDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, sendDataCache);
             try
             {
                 var remainingBytes = count;

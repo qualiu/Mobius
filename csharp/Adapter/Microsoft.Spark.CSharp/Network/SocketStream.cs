@@ -34,6 +34,7 @@ namespace Microsoft.Spark.CSharp.Network
             }
             streamSocket = socket;
             bufPool = ByteBufPool.Default;
+            CanFlush = true;
         }
 
         /// <summary>
@@ -91,11 +92,21 @@ namespace Microsoft.Spark.CSharp.Network
             }
         }
 
+        private bool CanFlush = true;
+
         /// <summary>
         /// Flushes data in send cache to the stream.
         /// </summary>
         public override void Flush()
         {
+            if (!CanFlush)
+            {
+                logger.LogWarn("CanFlush = false, return.");
+                return;
+            }
+
+            logger.LogWarn("CanFlush = {0}, Stack = {1}", CanFlush, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+
             if (sendDataCache != null && sendDataCache.IsReadable())
             {
                 try
@@ -105,6 +116,7 @@ namespace Microsoft.Spark.CSharp.Network
                 }
                 catch (Exception e)
                 {
+                    CanFlush = false;
                     if (e is ThreadAbortException || e is StackOverflowException || e is OutOfMemoryException)
                     {
                         throw;
@@ -201,6 +213,7 @@ namespace Microsoft.Spark.CSharp.Network
             }
             catch (Exception e)
             {
+                CanFlush = false;
                 if (e is ThreadAbortException || e is StackOverflowException || e is OutOfMemoryException)
                 {
                     throw;
@@ -249,6 +262,7 @@ namespace Microsoft.Spark.CSharp.Network
             }
             catch (Exception e)
             {
+                CanFlush = false;
                 if (e is ThreadAbortException || e is StackOverflowException || e is OutOfMemoryException)
                 {
                     throw;

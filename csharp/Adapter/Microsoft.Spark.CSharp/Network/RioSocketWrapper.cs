@@ -226,13 +226,13 @@ namespace Microsoft.Spark.CSharp.Network
             EnsureAccessible();
             if (!isConnected)
             {
-                logger.LogError("this=" + this.GetAddress() + ", Receive() Error, not connected, Stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
-                throw new InvalidOperationException("The operation is not allowed on non-connected sockets. this=" + this.GetAddress());
+                logger.LogError("this=" + this.SockHandle + ", Receive() Error, not connected, Stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+                throw new InvalidOperationException("The operation is not allowed on non-connected sockets. this=" + this.SockHandle);
             }
 
             var data = receivedDataQueue.Take();
             if (data.Status == (int)SocketError.Success) return data;
-            logger.LogError("this={0}, Receive error, will dispose. data.status = {1}, data = {2}, stack = {3}", this.GetAddress(), data.Status, data, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogError("this={0}, Receive error, will dispose. data.status = {1}, data = {2}, stack = {3}", this.SockHandle, data.Status, data, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
             // Throw exception if there is an error.
             data.Release();
             Dispose(true);
@@ -249,8 +249,8 @@ namespace Microsoft.Spark.CSharp.Network
             EnsureAccessible();
             if (!isConnected)
             {
-                logger.LogError("this=" + this.GetAddress() + ", Send() Error, not connected, data=" + data + ", Stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
-                throw new InvalidOperationException("The operation is not allowed on non-connected sockets. this=" + this.GetAddress());
+                logger.LogError("this=" + this.SockHandle + ", Send() Error, not connected, data=" + data + ", Stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+                throw new InvalidOperationException("The operation is not allowed on non-connected sockets. this=" + this.SockHandle);
             }
             if (!data.IsReadable())
             {
@@ -263,7 +263,7 @@ namespace Microsoft.Spark.CSharp.Network
 
             var status = sendStatusQueue.Take();
             if (status == (int)SocketError.Success) return;
-            logger.LogError("this={0}, Send error, will dispose. status = {1} : sendId = {2}, IntPtr.size={3}, data = {4}, Stack = {5}", this.GetAddress(), status, sendId, IntPtr.Size, data, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogError("this={0}, Send error, will dispose. status = {1} : sendId = {2}, IntPtr.size={3}, data = {4}, Stack = {5}", this.SockHandle, status, sendId, IntPtr.Size, data, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
 
             // throw a SocketException if theres is an error.
             Dispose(true);
@@ -403,6 +403,7 @@ namespace Microsoft.Spark.CSharp.Network
                 }
 
                 // Remove received Data from the queue, and release buffer back to byte pool.
+                logger.LogInfo("Will dispose {0} ByteBuf data in receivedDataQueue", receivedDataQueue.Count);
                 while (receivedDataQueue.Count > 0)
                 {
                     ByteBuf data;
@@ -414,6 +415,7 @@ namespace Microsoft.Spark.CSharp.Network
                 // will be gone once the socket handle be closed.
                 if (SockHandle != IntPtr.Zero)
                 {
+                    logger.LogInfo("Close sockHandle {0}", SockHandle);
                     RioNative.closesocket(SockHandle);
                     SockHandle = IntPtr.Zero;
                 }
@@ -421,7 +423,7 @@ namespace Microsoft.Spark.CSharp.Network
                 GC.SuppressFinalize(this);
             }
 
-            logger.LogInfo("this=" + this.GetAddress() + " Disposed");
+            logger.LogInfo("this=" + this.SockHandle + " Disposed");
             isConnected = false;
             isListening = false;
         }
@@ -537,7 +539,7 @@ namespace Microsoft.Spark.CSharp.Network
                 var oldSendId = sendId;
                 // Generate another key, if the key is duplicated.
                 sendId = GenerateUniqueKey();
-                logger.LogInfo("this=" + this.GetAddress() + " Changed sendId from " + oldSendId + " to " + sendId);
+                logger.LogInfo("this=" + this.SockHandle + " Changed sendId from " + oldSendId + " to " + sendId);
             }
 
             // Post a send operation via native method.

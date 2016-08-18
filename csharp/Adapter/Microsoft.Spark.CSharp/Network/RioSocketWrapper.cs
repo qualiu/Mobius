@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.Spark.CSharp.Core;
 using Microsoft.Spark.CSharp.Services;
 
 namespace Microsoft.Spark.CSharp.Network
@@ -25,9 +26,9 @@ namespace Microsoft.Spark.CSharp.Network
         internal static int rioRqGrowthFactor = 2; // Growth factor used to grow the RIO request queue.
 
         private readonly ILoggerService logger = LoggerServiceFactory.GetLogger(typeof(RioSocketWrapper));
-        private readonly BlockingCollection<ByteBuf> receivedDataQueue = 
+        private readonly BlockingCollection<ByteBuf> receivedDataQueue =
             new BlockingCollection<ByteBuf>(new ConcurrentQueue<ByteBuf>(), MaxDataCacheSize);
-        private readonly ConcurrentDictionary<long, RequestContext> requestContexts = 
+        private readonly ConcurrentDictionary<long, RequestContext> requestContexts =
             new ConcurrentDictionary<long, RequestContext>();
         private readonly BlockingCollection<int> sendStatusQueue =
             new BlockingCollection<int>(new ConcurrentQueue<int>(), MaxDataCacheSize);
@@ -225,12 +226,13 @@ namespace Microsoft.Spark.CSharp.Network
             EnsureAccessible();
             if (!isConnected)
             {
-                throw new InvalidOperationException("The operation is not allowed on non-connected sockets.");
+                logger.LogError("this=" + this.GetAddress() + ", Receive() Error, not connected, Stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+                throw new InvalidOperationException("The operation is not allowed on non-connected sockets. this=" + this.GetAddress());
             }
 
             var data = receivedDataQueue.Take();
-            if (data.Status == (int) SocketError.Success) return data;
-
+            if (data.Status == (int)SocketError.Success) return data;
+            logger.LogError("this={0}, Receive error, will dispose. data.status = {1}, data = {2}, stack = {3}", this.GetAddress(), data.Status, data, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
             // Throw exception if there is an error.
             data.Release();
             Dispose(true);
@@ -247,7 +249,8 @@ namespace Microsoft.Spark.CSharp.Network
             EnsureAccessible();
             if (!isConnected)
             {
-                throw new InvalidOperationException("The operation is not allowed on non-connected sockets.");
+                logger.LogError("this=" + this.GetAddress() + ", Send() Error, not connected, data=" + data + ", Stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+                throw new InvalidOperationException("The operation is not allowed on non-connected sockets. this=" + this.GetAddress());
             }
             if (!data.IsReadable())
             {
@@ -255,10 +258,12 @@ namespace Microsoft.Spark.CSharp.Network
             }
 
             var context = new RequestContext(SocketOperation.Send, data);
-            DoSend(GenerateUniqueKey(), context);
+            var sendId = GenerateUniqueKey();
+            DoSend(sendId, context);
 
             var status = sendStatusQueue.Take();
             if (status == (int)SocketError.Success) return;
+            logger.LogError("this={0}, Send error, will dispose. status = {1} : sendId = {2}, IntPtr.size={3}, data = {4}, Stack = {5}", this.GetAddress(), status, sendId, IntPtr.Size, data, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
 
             // throw a SocketException if theres is an error.
             Dispose(true);
@@ -286,7 +291,7 @@ namespace Microsoft.Spark.CSharp.Network
                 case SocketOperation.Send:
                     ProcessSend(requestId, context, status, byteTransferred);
                     return;
-                
+
                 default:
                     throw new InvalidOperationException("Invalid socket operation - not a receive / send operation.");
             }
@@ -416,6 +421,7 @@ namespace Microsoft.Spark.CSharp.Network
                 GC.SuppressFinalize(this);
             }
 
+            logger.LogInfo("this=" + this.GetAddress() + " Disposed");
             isConnected = false;
             isListening = false;
         }
@@ -492,7 +498,7 @@ namespace Microsoft.Spark.CSharp.Network
             data.WriterIndex += (int)byteTransferred;
             receivedDataQueue.Add(data);
 
-            if (status != (int) SocketError.Success)
+            if (status != (int)SocketError.Success)
             {
                 logger.LogError("Socket [{0}] receive operation failed with error code [{1}]",
                     connectionId, status);
@@ -518,7 +524,7 @@ namespace Microsoft.Spark.CSharp.Network
         {
             // Make a room from Request Queue of this socket for operation.
             var errorStatus = AllocateRequest();
-            if ( errorStatus != 0)
+            if (errorStatus != 0)
             {
                 logger.LogError("Cannot post send operation due to no room in Request Queue.");
                 sendStatusQueue.Add(errorStatus);
@@ -528,8 +534,10 @@ namespace Microsoft.Spark.CSharp.Network
             // Add the operation context to request table for completion callback.
             while (!requestContexts.TryAdd(sendId, context))
             {
+                var oldSendId = sendId;
                 // Generate another key, if the key is duplicated.
                 sendId = GenerateUniqueKey();
+                logger.LogInfo("this=" + this.GetAddress() + " Changed sendId from " + oldSendId + " to " + sendId);
             }
 
             // Post a send operation via native method.
@@ -638,7 +646,7 @@ namespace Microsoft.Spark.CSharp.Network
             return addrbuf;
         }
     }
-    
+
     internal class RequestContext
     {
         public RequestContext(SocketOperation operation, ByteBuf data)

@@ -2,8 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Microsoft.Spark.CSharp.Core;
+using Microsoft.Spark.CSharp.Services;
 
 namespace Microsoft.Spark.CSharp.Network
 {
@@ -11,12 +14,13 @@ namespace Microsoft.Spark.CSharp.Network
     /// Provides the underlying stream of data for network access.
     /// Just like a NetworkStream.
     /// </summary>
-    internal class SocketStream: Stream
+    internal class SocketStream : Stream
     {
         private readonly ByteBufPool bufPool;
         private readonly ISocketWrapper streamSocket;
         private ByteBuf recvDataCache;
         private ByteBuf sendDataCache;
+        private readonly ILoggerService logger = LoggerServiceFactory.GetLogger(typeof(SocketStream));
 
         /// <summary>
         /// Initializes a SocketStream with a SaeaSocketWrapper object.
@@ -68,7 +72,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// The length of data available on the stream.
         /// Always throws <see cref='NotSupportedException'/>.
         /// </summary>
-        public override long Length { get{ throw new NotSupportedException("This stream does not support seek operations."); } }
+        public override long Length { get { throw new NotSupportedException("This stream does not support seek operations."); } }
 
         /// <summary>
         /// Gets or sets the position in the stream.
@@ -163,6 +167,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <returns>Number of bytes we read.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
+            logger.LogInfo("this={0} Read() buffer = {1}, offset={2}, count={3}, recvDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, recvDataCache);
             try
             {
                 if (recvDataCache == null)
@@ -203,7 +208,7 @@ namespace Microsoft.Spark.CSharp.Network
 
                 // some sort of error occurred on the socket call,
                 // set the SocketException as InnerException and throw
-                throw new IOException(string.Format("Unable to read data from the transport connection: {0}.", e.Message), e);
+                throw new IOException(string.Format("Unable to read data from the transport connection: {0}.", e.Message) + " this=" + this.GetAddress() + ", recvDataCache=" + recvDataCache + ", stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"), e);
             }
         }
 
@@ -215,6 +220,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <param name="count">Number of bytes to write.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
+            logger.LogInfo("this={0} Write() buffer = {1}, offset={2}, count={3}, sendDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, sendDataCache);
             try
             {
                 var remainingBytes = count;
@@ -231,7 +237,7 @@ namespace Microsoft.Spark.CSharp.Network
                         sendDataCache.WriteBytes(buffer, newOffset, remainingBytes);
                         return;
                     }
-                    
+
                     var sendCount = sendDataCache.WritableBytes;
                     sendDataCache.WriteBytes(buffer, newOffset, sendCount);
                     streamSocket.Send(sendDataCache);
@@ -250,7 +256,7 @@ namespace Microsoft.Spark.CSharp.Network
 
                 // some sort of error occurred on the socked call,
                 // set the SocketException as InnerException and throw
-                throw new IOException(string.Format("Unable to write data to the transport connection: {0}.", e.Message), e);
+                throw new IOException(string.Format("Unable to write data to the transport connection: {0}.", e.Message) + " this=" + this.GetAddress() + ", sendDataCache=" + sendDataCache + ", stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"), e);
             }
         }
     }

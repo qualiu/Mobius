@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Spark.CSharp.Core;
 using Microsoft.Spark.CSharp.Services;
 
 namespace Microsoft.Spark.CSharp.Network
@@ -143,6 +145,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <param name="byteBuf">The ByteBuf to be release.</param>
         public void Free(ByteBuf byteBuf)
         {
+            logger.LogInfo("this=" + this.GetAddress() + " Free byteBuf = " + byteBuf + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
             if (byteBuf.ByteBufChunk == null || byteBuf.Capacity == 0 || byteBuf.ByteBufChunk.Size < byteBuf.Offset + byteBuf.Capacity)
             {
                 throw new Exception("Attempt to free invalid byteBuf");
@@ -173,7 +176,7 @@ namespace Microsoft.Spark.CSharp.Network
         [MethodImpl(MethodImplOptions.Synchronized)]
         public override string ToString()
         {
-            StringBuilder buf = new StringBuilder()
+            StringBuilder buf = new StringBuilder("this=" + this.GetAddress() + ",")
                 .Append("Chunk(s) at 0~25%:")
                 .Append(Environment.NewLine)
                 .Append(qInit)
@@ -213,7 +216,7 @@ namespace Microsoft.Spark.CSharp.Network
             for (var q = qInit; q != null; q = q.NextList, qIndex++)
             {
                 int count = 0;
-                for (var cur = q.head; cur != null; cur = cur.Next, count++) {}
+                for (var cur = q.head; cur != null; cur = cur.Next, count++) { }
                 qUsage[qIndex] = count;
             }
             return qUsage;

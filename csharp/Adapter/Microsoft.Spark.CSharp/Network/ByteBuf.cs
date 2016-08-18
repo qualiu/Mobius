@@ -2,8 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security;
+using Microsoft.Spark.CSharp.Core;
+using Microsoft.Spark.CSharp.Services;
 
 namespace Microsoft.Spark.CSharp.Network
 {
@@ -13,6 +16,7 @@ namespace Microsoft.Spark.CSharp.Network
     /// </summary>
     internal class ByteBuf
     {
+        private readonly ILoggerService logger = LoggerServiceFactory.GetLogger(typeof(RioSocketWrapper));
         private int readerIndex;
         private int writerIndex;
 
@@ -20,6 +24,13 @@ namespace Microsoft.Spark.CSharp.Network
         /// Indicates the state of that the ByteBuf as socket data transport.
         /// </summary>
         public int Status;
+        public override string ToString()
+        {
+            return string.Format("this={0}, readerIndex={1}, writerIndex={2}, Status={3}, Capacity={4}, Offset={5}, ReadableBytes={6}, WritableBytes={7}, ByteBufChunk={8}",
+                this.GetAddress(), readerIndex, writerIndex, Status,
+                Capacity, Offset, ReadableBytes, WritableBytes, ByteBufChunk);
+        }
+
 
         /// <summary>
         /// We borrow some ideas from Netty's ByteBuf. 
@@ -37,6 +48,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// </summary>
         internal ByteBuf(ByteBufChunk chunk, int offset, int capacity)
         {
+            logger.LogDebug("ByteBuf(ByteBufChunk = " + chunk + ", offset = " + offset + ", capacity = " + capacity + ")");
             if (offset < 0)
                 throw new ArgumentOutOfRangeException("offset", "Offset is less than zero.");
             if (capacity < 0)
@@ -61,6 +73,7 @@ namespace Microsoft.Spark.CSharp.Network
             Offset = 0;
             ByteBufChunk = null;
             readerIndex = writerIndex = 0;
+            logger.LogError("this=" + this.GetAddress() + ", ByteBuf(ByteBufChunk = " + ByteBufChunk + ", offset = " + Offset + ", capacity = " + Capacity + ", errorStatus = " + errorStatus + ")");
         }
 
         /// <summary>
@@ -256,6 +269,8 @@ namespace Microsoft.Spark.CSharp.Network
         /// </summary>
         public void Release()
         {
+            logger.LogInfo("this=" + this.GetAddress() + " Release ByteBufChunk = " + ByteBufChunk + (ByteBufChunk == null ? "" : ", IsDisposed = " + ByteBufChunk.IsDisposed)
+                + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
             if (ByteBufChunk == null || ByteBufChunk.IsDisposed)
             {
                 return;
@@ -292,7 +307,7 @@ namespace Microsoft.Spark.CSharp.Network
             {
                 fixed (byte* pBuf = &buffer[offset])
                 {
-                    memcpy(ByteBufChunk.UnsafeArray + WriterIndexOffset, (IntPtr)pBuf, (ulong) count);
+                    memcpy(ByteBufChunk.UnsafeArray + WriterIndexOffset, (IntPtr)pBuf, (ulong)count);
                 }
             }
             else
@@ -355,7 +370,7 @@ namespace Microsoft.Spark.CSharp.Network
         {
             if (ByteBufChunk == null || ByteBufChunk.IsDisposed)
             {
-                throw new ObjectDisposedException("ByteBufChunk");
+                throw new ObjectDisposedException("ByteBufChunk", "EnsureAccessible: this=" + this.GetAddress() + ", ByteBufChunk = " + ByteBufChunk + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
             }
         }
 
@@ -397,5 +412,10 @@ namespace Microsoft.Spark.CSharp.Network
         public readonly IntPtr BufferId;
         public readonly uint Offset;
         public uint Length;
+
+        public override string ToString()
+        {
+            return string.Format("BufferId={0}, Offset={1}, Length={2}", BufferId, Offset, Length);
+        }
     }
 }

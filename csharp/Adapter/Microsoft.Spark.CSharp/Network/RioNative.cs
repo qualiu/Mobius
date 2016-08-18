@@ -206,7 +206,7 @@ namespace Microsoft.Spark.CSharp.Network
 
                         if (result.Status == (int)SocketError.ConnectionAborted)
                         {
-                            Logger.LogDebug(
+                            Logger.LogInfo(
                                 "The correlated socket [{0}] already disposed and removed from SocketTable.",
                                 result.ConnectionId);
                             break;

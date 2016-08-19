@@ -228,13 +228,13 @@ namespace Microsoft.Spark.CSharp.Network
             EnsureAccessible();
             if (!isConnected)
             {
-                logger.LogError("Receive Error, throw not connected. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+                logger.LogError("Receive Error, throw not connected. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
                 throw new InvalidOperationException("The operation is not allowed on non-connected sockets. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle);
             }
 
             var data = receivedDataQueue.Take();
             if (data.Status == (int)SocketError.Success) return data;
-            logger.LogError("Receive error, will dispose and throw. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle + ", status = " + data.Status + ", data = " + data + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogError("Receive error, will dispose and throw. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle + ", status = " + data.Status + ", data = " + data + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
             // Throw exception if there is an error.
             data.Release();
             Dispose(true);
@@ -251,7 +251,7 @@ namespace Microsoft.Spark.CSharp.Network
             EnsureAccessible();
             if (!isConnected)
             {
-                logger.LogError("Send Error, throw not connected. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle + ", data = " + data + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+                logger.LogError("Send Error, throw not connected. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle + ", data = " + data + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
                 throw new InvalidOperationException("The operation is not allowed on non-connected sockets. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle);
             }
             if (!data.IsReadable())
@@ -259,13 +259,17 @@ namespace Microsoft.Spark.CSharp.Network
                 throw new ArgumentException("The parameter {0} must contain one or more elements.", "data");
             }
 
+
             var context = new RequestContext(SocketOperation.Send, data);
+            var previousInfo = "Before-DoSend: Data = { IsReadable = " + data.IsReadable() + ", data = " + data + ", context = " + context + " }";
             var sendId = GenerateUniqueKey();
             DoSend(sendId, context);
 
             var status = sendStatusQueue.Take();
             if (status == (int)SocketError.Success) return;
-            logger.LogError("Send error, will dispose and throw. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle + ", status = " + status + ", sendId = " + sendId + ", data = " + data + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogError("Send error, will dispose and throw. SockHandle = " + this.SockHandle + ", rioRqHandle = " + rioRqHandle
+                + ", status = " + status + ", sendId = " + sendId + ", data = " + data + ", context = " + context + "; " + previousInfo
+                + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
 
             // throw a SocketException if there is an error.
             Dispose(true);
@@ -476,6 +480,7 @@ namespace Microsoft.Spark.CSharp.Network
 
             // Post a receive operation via native method.
             var rioBuf = dataBuffer.GetInputRioBuf();
+            var previousInfo = "Before-PostRIOReceive : { context = " + context + ", rioBuf = " + rioBuf + " }";
             if (RioNative.PostRIOReceive(rioRqHandle, &rioBuf, 1, 0, recvId)) return;
 
             requestContexts.TryRemove(recvId, out context);
@@ -491,8 +496,8 @@ namespace Microsoft.Spark.CSharp.Network
             // Log exception, if post receive operation failed.
             var socketException = new SocketException();
             logger.LogError(string.Format("Failed to call DoReceive() with error code [{0}], error message: {1}", socketException.ErrorCode, socketException.Message)
-                + ", rioRqHandle = " + rioRqHandle + ", rioBuf = " + rioBuf + ", recvId = " + recvId + ", context = " + context
-                + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--");
+                + ". Debug : rioRqHandle = " + rioRqHandle + ", rioBuf = " + rioBuf + ", recvId = " + recvId + ", context = " + context + "; " + previousInfo
+                + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--");
             context.Data.Status = socketException.ErrorCode;
             receivedDataQueue.Add(context.Data);
         }
@@ -549,8 +554,10 @@ namespace Microsoft.Spark.CSharp.Network
                 logger.LogWarn("Changed sendId from " + oldSendId + " to " + sendId + " : SockHandle = " + SockHandle + ", rioRqHandle = " + rioRqHandle);
             }
 
+
             // Post a send operation via native method.
             var rioBuf = context.Data.GetOutputRioBuf();
+            var previousInfo = "Before-PostRIOSend : { context = " + context + ", rioBuf = " + rioBuf + " }";
             if (RioNative.PostRIOSend(rioRqHandle, &rioBuf, 1, 0, sendId)) return;
 
             requestContexts.TryRemove(sendId, out context);
@@ -566,8 +573,8 @@ namespace Microsoft.Spark.CSharp.Network
             // Log exception, if post send operation failed.
             var socketException = new SocketException();
             logger.LogError(string.Format("Failed to call PostRIOSend() with error code [{0}]. Error message: {1}", socketException.ErrorCode, socketException.Message)
-                + ", rioRqHandle = " + rioRqHandle + ", rioBuf = " + rioBuf + ", recvId = " + sendId + ", context = " + context
-                + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--");
+                + ". Debug : rioRqHandle = " + rioRqHandle + ", rioBuf = " + rioBuf + ", recvId = " + sendId + ", context = " + context + "; " + previousInfo
+                + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--");
             sendStatusQueue.Add(socketException.ErrorCode);
         }
 

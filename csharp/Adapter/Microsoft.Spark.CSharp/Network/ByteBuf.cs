@@ -369,7 +369,7 @@ namespace Microsoft.Spark.CSharp.Network
             if (ByteBufChunk == null || ByteBufChunk.IsDisposed)
             {
                 throw new ObjectDisposedException("ByteBufChunk", "EnsureAccessible: ByteBufChunk = " + ByteBufChunk
-                    + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--");
+                    + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--");
             }
         }
 

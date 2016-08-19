@@ -106,7 +106,7 @@ namespace Microsoft.Spark.CSharp.Network
             //    return;
             //}
 
-            logger.LogInfo("CanFlush = " + CanFlush); // + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogInfo("CanFlush = " + CanFlush); // + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
 
             if (sendDataCache != null && sendDataCache.IsReadable())
             {
@@ -223,7 +223,7 @@ namespace Microsoft.Spark.CSharp.Network
                 // some sort of error occurred on the socket call,
                 // set the SocketException as InnerException and throw
                 throw new IOException(string.Format("Unable to read data from the transport connection: {0}.", e.Message) + "Debug : recvDataCache=" + recvDataCache
-                    + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--", e);
+                    + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--", e);
             }
         }
 
@@ -273,7 +273,7 @@ namespace Microsoft.Spark.CSharp.Network
                 // some sort of error occurred on the socked call,
                 // set the SocketException as InnerException and throw
                 throw new IOException(string.Format("Unable to write data to the transport connection: {0}.", e.Message) + " Debug : sendDataCache=" + sendDataCache
-                    + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--", e);
+                    + ", Debug-Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--", e);
             }
         }
     }

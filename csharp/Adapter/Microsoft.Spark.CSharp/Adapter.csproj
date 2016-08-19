@@ -63,7 +63,6 @@
     <Compile Include="Core\Accumulator.cs" />
     <Compile Include="Core\Broadcast.cs" />
     <Compile Include="Core\HadoopConfiguration.cs" />
-    <Compile Include="Core\MobiusExtension.cs" />
     <Compile Include="Core\Option.cs" />
     <Compile Include="Core\Partitioner.cs" />
     <Compile Include="Core\RDDCollector.cs" />

@@ -49,6 +49,7 @@ namespace Microsoft.Spark.CSharp.Network
             }
             streamSocket = socket;
             bufPool = ByteBufPool.UnsafeDefault;
+            CanFlush = true;
         }
 
         /// <summary>
@@ -99,13 +100,13 @@ namespace Microsoft.Spark.CSharp.Network
         /// </summary>
         public override void Flush()
         {
-            if (!CanFlush)
-            {
-                logger.LogWarn("CanFlush = false, return.");
-                return;
-            }
+            //if (!CanFlush)
+            //{
+            //    logger.LogWarn("CanFlush = false, return.");
+            //    return;
+            //}
 
-            logger.LogWarn("CanFlush = {0}, Stack = {1}", CanFlush, new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogInfo("CanFlush = " + CanFlush); // + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
 
             if (sendDataCache != null && sendDataCache.IsReadable())
             {
@@ -179,7 +180,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <returns>Number of bytes we read.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            logger.LogDebug("this={0} Read() buffer = {1}, offset={2}, count={3}, recvDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, recvDataCache);
+            //logger.LogDebug("Read() buffer = " + (buffer == null ? null : "[" + buffer.Length + "]") + ", offset=" + offset + ", count=" + count + ", recvDataCache=" + recvDataCache);
             try
             {
                 if (recvDataCache == null)
@@ -221,7 +222,8 @@ namespace Microsoft.Spark.CSharp.Network
 
                 // some sort of error occurred on the socket call,
                 // set the SocketException as InnerException and throw
-                throw new IOException(string.Format("Unable to read data from the transport connection: {0}.", e.Message) + " this=" + this.GetAddress() + ", recvDataCache=" + recvDataCache + ", stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"), e);
+                throw new IOException(string.Format("Unable to read data from the transport connection: {0}.", e.Message) + "Debug : recvDataCache=" + recvDataCache
+                    + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--", e);
             }
         }
 
@@ -233,7 +235,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <param name="count">Number of bytes to write.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            logger.LogDebug("this={0} Write() buffer = {1}, offset={2}, count={3}, sendDataCache={4}", this.GetAddress(), buffer == null ? null : "[" + buffer.Length + "]", offset, count, sendDataCache);
+            //logger.LogDebug("Write() buffer = " + (buffer == null ? null : "[" + buffer.Length + "]") + ", offset=" + offset + ", count=" + count + ", sendDataCache=" + sendDataCache);
             try
             {
                 var remainingBytes = count;
@@ -270,7 +272,8 @@ namespace Microsoft.Spark.CSharp.Network
 
                 // some sort of error occurred on the socked call,
                 // set the SocketException as InnerException and throw
-                throw new IOException(string.Format("Unable to write data to the transport connection: {0}.", e.Message) + " this=" + this.GetAddress() + ", sendDataCache=" + sendDataCache + ", stack=" + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"), e);
+                throw new IOException(string.Format("Unable to write data to the transport connection: {0}.", e.Message) + " Debug : sendDataCache=" + sendDataCache
+                    + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--", e);
             }
         }
     }

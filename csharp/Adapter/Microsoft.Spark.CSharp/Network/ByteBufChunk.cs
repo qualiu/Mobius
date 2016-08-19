@@ -153,7 +153,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// Returns the IntPtr that points to beginning of the cached heap block.
         /// This is used for PInvoke with native code.
         /// </summary>
-        public IntPtr UnsafeArray { get { return unsafeMemory;} }
+        public IntPtr UnsafeArray { get { return unsafeMemory; } }
 
         /// <summary>
         /// Allocates a ByteBuf from this ByteChunk.
@@ -197,7 +197,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// </summary>
         public override string ToString()
         {
-            return new StringBuilder()
+            return new StringBuilder("{{")
                 .Append("Chunk(")
                 .Append(RuntimeHelpers.GetHashCode(this).ToString("X"))
                 .Append(": ")
@@ -207,6 +207,7 @@ namespace Microsoft.Spark.CSharp.Network
                 .Append('/')
                 .Append(Size)
                 .Append(')')
+                .Append("}}")
                 .ToString();
         }
 
@@ -327,7 +328,7 @@ namespace Microsoft.Spark.CSharp.Network
             public readonly int Count;
             public readonly int Offset;
         }
-        
+
         #region PInvoke
 
         [SuppressUnmanagedCodeSecurity]

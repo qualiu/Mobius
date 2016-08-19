@@ -108,8 +108,6 @@ namespace Microsoft.Spark.CSharp
         /// </summary>
         private void StartDaemonServer(ISocketWrapper listener)
         {
-            logger.LogInfo("StartDaemonServer ...");
-
             bool sparkReuseWorker = false;
             string envVar = Environment.GetEnvironmentVariable("SPARK_REUSE_WORKER"); // this envVar is set in JVM side
             if ((envVar != null) && envVar.Equals("1"))
@@ -117,6 +115,7 @@ namespace Microsoft.Spark.CSharp
                 sparkReuseWorker = true;
             }
 
+            logger.LogInfo("StartDaemonServer ... sparkReuseWorker = {0}", sparkReuseWorker);
             try
             {
                 int trId = 1;

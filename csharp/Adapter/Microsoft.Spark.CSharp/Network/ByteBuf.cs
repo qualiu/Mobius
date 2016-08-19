@@ -26,9 +26,8 @@ namespace Microsoft.Spark.CSharp.Network
         public int Status;
         public override string ToString()
         {
-            return string.Format("this={0}, readerIndex={1}, writerIndex={2}, Status={3}, Capacity={4}, Offset={5}, ReadableBytes={6}, WritableBytes={7}, ByteBufChunk={8}",
-                this.GetAddress(), readerIndex, writerIndex, Status,
-                Capacity, Offset, ReadableBytes, WritableBytes, ByteBufChunk);
+            return string.Format("{{ readerIndex={0}, writerIndex={1}, Status={2}, Capacity={3}, Offset={4}, ReadableBytes={5}, WritableBytes={6}, ByteBufChunk={7} }}",
+                readerIndex, writerIndex, Status, Capacity, Offset, ReadableBytes, WritableBytes, ByteBufChunk);
         }
 
 
@@ -73,7 +72,7 @@ namespace Microsoft.Spark.CSharp.Network
             Offset = 0;
             ByteBufChunk = null;
             readerIndex = writerIndex = 0;
-            logger.LogError("this=" + this.GetAddress() + ", ByteBuf(ByteBufChunk = " + ByteBufChunk + ", offset = " + Offset + ", capacity = " + Capacity + ", errorStatus = " + errorStatus + ")");
+            logger.LogError("ByteBuf(ByteBufChunk = " + ByteBufChunk + ", offset = " + Offset + ", capacity = " + Capacity + ", errorStatus = " + errorStatus + ")");
         }
 
         /// <summary>
@@ -269,8 +268,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// </summary>
         public void Release()
         {
-            logger.LogInfo("this=" + this.GetAddress() + " Release ByteBufChunk = " + ByteBufChunk + (ByteBufChunk == null ? "" : ", IsDisposed = " + ByteBufChunk.IsDisposed)
-                + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogDebug("Release ByteBufChunk = " + ByteBufChunk + (ByteBufChunk == null ? "" : ", IsDisposed = " + ByteBufChunk.IsDisposed));
             if (ByteBufChunk == null || ByteBufChunk.IsDisposed)
             {
                 return;
@@ -370,7 +368,8 @@ namespace Microsoft.Spark.CSharp.Network
         {
             if (ByteBufChunk == null || ByteBufChunk.IsDisposed)
             {
-                throw new ObjectDisposedException("ByteBufChunk", "EnsureAccessible: this=" + this.GetAddress() + ", ByteBufChunk = " + ByteBufChunk + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+                throw new ObjectDisposedException("ByteBufChunk", "EnsureAccessible: ByteBufChunk = " + ByteBufChunk
+                    + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--") + "--NEW-LINE--" + "Stack End" + "--NEW-LINE--");
             }
         }
 
@@ -415,7 +414,7 @@ namespace Microsoft.Spark.CSharp.Network
 
         public override string ToString()
         {
-            return string.Format("BufferId={0}, Offset={1}, Length={2}", BufferId, Offset, Length);
+            return string.Format("{{ BufferId={0}, Offset={1}, Length={2} }}", BufferId, Offset, Length);
         }
     }
 }

@@ -145,7 +145,7 @@ namespace Microsoft.Spark.CSharp.Network
         /// <param name="byteBuf">The ByteBuf to be release.</param>
         public void Free(ByteBuf byteBuf)
         {
-            logger.LogInfo("this=" + this.GetAddress() + " Free byteBuf = " + byteBuf + ", Stack = " + new StackTrace(true).ToString().Replace(Environment.NewLine, "--NEW-LINE--"));
+            logger.LogDebug("Free byteBuf = " + byteBuf);
             if (byteBuf.ByteBufChunk == null || byteBuf.Capacity == 0 || byteBuf.ByteBufChunk.Size < byteBuf.Offset + byteBuf.Capacity)
             {
                 throw new Exception("Attempt to free invalid byteBuf");
@@ -176,7 +176,7 @@ namespace Microsoft.Spark.CSharp.Network
         [MethodImpl(MethodImplOptions.Synchronized)]
         public override string ToString()
         {
-            StringBuilder buf = new StringBuilder("this=" + this.GetAddress() + ",")
+            StringBuilder buf = new StringBuilder()
                 .Append("Chunk(s) at 0~25%:")
                 .Append(Environment.NewLine)
                 .Append(qInit)

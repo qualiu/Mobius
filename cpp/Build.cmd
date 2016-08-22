@@ -5,6 +5,15 @@ SET CMDHOME=%~dp0
 @REM Remove trailing backslash \
 set CMDHOME=%CMDHOME:~0,-1%
 
+if not exist %CMDHOME%\spdlog (
+    git clone https://github.com/gabime/spdlog %CMDHOME%\spdlog
+) else (
+    pushd %CMDHOME%\spdlog
+    git pull
+    popd
+)
+
+
 set PROJ_NAME=Riosock
 set PROJ=%CMDHOME%\%PROJ_NAME%.sln
 

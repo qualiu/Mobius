@@ -47,6 +47,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\spdlog\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>..\spdlog\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -80,9 +84,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Locks.h" />
+    <ClInclude Include="LogUtil.h" />
     <ClInclude Include="Riosock.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="LogUtil.cpp" />
     <ClCompile Include="Riosock.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

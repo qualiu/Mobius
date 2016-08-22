@@ -11,6 +11,7 @@
 #include "RIOSock.h"
 #include <cstdlib>
 #include "Locks.h"
+#include "LogUtil.h"
 #include <new>
 #include <cassert>
 
@@ -496,13 +497,27 @@ BOOL RIOSOCKAPI PostRIOSend(
     _In_  PVOID     requestContext
     )
 {
+	printf_s("begin PostRIOSend in dll\n");
+	printf_s("PostRIOSend() begin : socketQueue=%s, rioBuf=%s, dataBufferCount=%ul, flags=%d, requestContext=%d\n", 
+		ToString(socketQueue), ToString(pData), dataBufferCount, flags, requestContext);
     auto hr = EnsureWinSockMethods(INVALID_SOCKET);
+	
     if (FAILED(hr))
     {
+	/*	printf_s("PostRIOSend() end, failed at EnsureWinSockMethods : return =%d, socketQueue=%s, rioBuf=%s, dataBufferCount=%ul, flags=%d, requestContext=%d\n",
+			hr, ToString(socketQueue), ToString(pData), dataBufferCount, flags, requestContext);*/
         return FALSE;
     }
 
-    return RIOFuncs.RIOSend(socketQueue, pData, dataBufferCount, flags, requestContext);
+	//printf_s("PostRIOSend() EnsureWinSockMethods return =%d : socketQueue=%s, rioBuf=%s, dataBufferCount=%ul, flags=%d, requestContext=%d\n",
+	//	hr, ToString(socketQueue), ToString(pData), dataBufferCount, flags, requestContext);
+
+    auto rt = RIOFuncs.RIOSend(socketQueue, pData, dataBufferCount, flags, requestContext);
+
+	//printf_s("PostRIOSend() RIOSend return =%d : socketQueue=%s, rioBuf=%s, dataBufferCount=%ul, flags=%d, requestContext=%d\n",
+	//	rt, ToString(socketQueue), ToString(pData), dataBufferCount, flags, requestContext);
+
+	return rt;
 }
 
 

@@ -121,8 +121,8 @@ namespace Microsoft.Spark.CSharp.Interop.Ipc
         internal WeakObjectManagerImpl(TimeSpan checkIntervalTimeSpan)
         {
             checkInterval = checkIntervalTimeSpan;
-            releaserThread = new Thread(RunReleaseObjectLoop) { IsBackground = true };
-            releaserThread.Start();
+            //releaserThread = new Thread(RunReleaseObjectLoop) { IsBackground = true };
+            //releaserThread.Start();
         }
 
         internal WeakObjectManagerImpl() : this(DefaultCheckInterval) { }

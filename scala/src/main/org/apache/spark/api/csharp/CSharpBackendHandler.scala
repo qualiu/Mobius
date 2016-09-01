@@ -274,18 +274,19 @@ private object JVMObjectTracker {
 
   // Muliple threads may access objMap and increase objCounter. Because get method return Option,
   // it is convenient to use a Scala map instead of java.util.concurrent.ConcurrentHashMap.
-  private[this] val objMap = new HashMap[String, Object]
+  private[this] val objMap = new com.google.common.collect.MapMaker().weakValues().makeMap[String, Object]()
   private[this] var objCounter: Int = 1
 
   def getObject(id: String): Object = {
     synchronized {
-      objMap(id)
+      objMap.get(id)
     }
   }
 
   def get(id: String): Option[Object] = {
     synchronized {
-      objMap.get(id)
+      val v = objMap.get(id)
+      if (v eq null) None else Some(v)
     }
   }
 
@@ -300,8 +301,8 @@ private object JVMObjectTracker {
 
   def remove(id: String): Option[Object] = {
     synchronized {
-      objMap.remove(id)
+      val v = objMap.remove(id)
+      if (v eq null) None else Some(v)
     }
   }
-
 }

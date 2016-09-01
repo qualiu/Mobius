@@ -6,11 +6,14 @@
 package org.apache.spark.api.csharp
 
 import org.apache.spark.util.Utils
-import java.io.{DataOutputStream, ByteArrayOutputStream, DataInputStream, ByteArrayInputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
 import java.net.Socket
+import java.util.concurrent.Callable
 
+import com.google.common.cache.{Cache, CacheBuilder, CacheLoader}
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
+import org.apache.spark.Logging
 
 // TODO - work with SparkR devs to make this configurable and reuse RBackendHandler
 import org.apache.spark.api.csharp.SerDe._
@@ -270,23 +273,34 @@ class CSharpBackendHandler(server: CSharpBackend) extends SimpleChannelInboundHa
 /**
   * Tracks JVM objects returned to C# which is useful for invoking calls from C# to JVM objects
   */
-private object JVMObjectTracker {
-
+private object JVMObjectTracker extends Logging {
   // Muliple threads may access objMap and increase objCounter. Because get method return Option,
   // it is convenient to use a Scala map instead of java.util.concurrent.ConcurrentHashMap.
-  private[this] val objMap = new com.google.common.collect.MapMaker().weakValues().makeMap[String, Object]()
+  //private[this] val objMap = new com.google.common.collect.MapMaker().concurrencyLevel(2).weakValues().makeMap[String, Object]()
+  private[this] val objMap : Cache[String, Object] = CacheBuilder.newBuilder().build[String, Object](new CacheLoader[String, Object] {
+    override def load(k: String): Object = {
+      null
+    }
+  })
   private[this] var objCounter: Int = 1
+
+  private def getOrNull(id : String) : Object = {
+    objMap.get(id, new Callable
+  }
 
   def getObject(id: String): Object = {
     synchronized {
-      objMap.get(id)
+      val v = objMap.get(id, null)
+      if (v == null) println(s"getObject null : id = $id")
+      v
     }
   }
 
   def get(id: String): Option[Object] = {
     synchronized {
       val v = objMap.get(id)
-      if (v eq null) None else Some(v)
+      if(v == null) println(s"get null : id = $id")
+      if (v == null) None else Some(v)
     }
   }
 
@@ -295,14 +309,17 @@ private object JVMObjectTracker {
       val objId = objCounter.toString
       objCounter = objCounter + 1
       objMap.put(objId, obj)
+      println(s"put objId = $objId , obj = $obj")
       objId
     }
   }
 
   def remove(id: String): Option[Object] = {
     synchronized {
-      val v = objMap.remove(id)
-      if (v eq null) None else Some(v)
+      val v = objMap.get(id, null)
+      objMap.invalidate(id)
+      println(s"remove objId = $id , obj = $v")
+      if (v == null) None else Some(v)
     }
   }
 }

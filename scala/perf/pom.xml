@@ -129,6 +129,46 @@
               </execution>
           </executions>
           </plugin>
+          <!-- Add jar plugin to specify main class -->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <configuration>
+                  <archive>
+                      <manifest>
+                          <addClasspath>true</addClasspath>
+                          <classpathPrefix>lib/</classpathPrefix>
+                          <mainClass>com.microsoft.spark.csharp.PerfBenchmark</mainClass>
+                      </manifest>
+                  </archive>
+              </configuration>
+          </plugin>
+
+          <!-- for convenience , one jar -->
+          <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <finalName>SparkCLRPerfTestOneJar</finalName>
+                  <descriptorRefs>
+                      <descriptorRef>jar-with-dependencies</descriptorRef>
+                  </descriptorRefs>
+                  <archive>
+                      <manifest>
+                          <mainClass>com.microsoft.spark.csharp.PerfBenchmark</mainClass>
+                      </manifest>
+                  </archive>
+              </configuration>
+              <executions>
+                  <execution>
+                      <id>make-assembly</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>single</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
       </plugins>
   </build>
 </project>

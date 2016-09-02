@@ -3,8 +3,11 @@
 
 package com.microsoft.spark.csharp
 
+import java.io.File
+
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
+
 import scala.collection.mutable.ListBuffer
 import scala.util.Sorting
 
@@ -17,6 +20,14 @@ object PerfBenchmark {
   val executionTimeList = scala.collection.mutable.ListBuffer.empty[Long]
 
   def main(args: Array[String]): Unit = {
+    if (args.length != 2) {
+      val jar = new File(PerfBenchmark.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath)
+      println(s"Usage   : $jar  run-times  data")
+      println(s"Example : $jar  10         hdfs:///perfdata/freebasedeletions/*")
+      println(s"Example : $jar  1          hdfs:///perf/data/deletions/deletions.csv-00000-of-00020")
+      sys.exit(1)
+    }
+
     val PerfSuite = Class.forName("com.microsoft.spark.csharp.PerfSuite")
     val sparkConf = new SparkConf().setAppName("SparkCLR perf suite - scala")
     val sparkContext = new SparkContext(sparkConf)
@@ -32,9 +43,10 @@ object PerfBenchmark {
     val freebaseDeletionsBenchmarkClass = Class.forName(className)
     val perfSuites = freebaseDeletionsBenchmarkClass.getDeclaredMethods
 
-    for ( perfSuiteMethod <- perfSuites) {
+    for (perfSuiteMethod <- perfSuites) {
       val perfSuiteName = perfSuiteMethod.getName
-      if (perfSuiteName.startsWith("Run")) { //TODO - use annotation type
+      if (perfSuiteName.startsWith("Run")) {
+        //TODO - use annotation type
         executionTimeList.clear
         var runCount = args(0).toInt
         while (runCount > 0) {
@@ -54,21 +66,17 @@ object PerfBenchmark {
 
   def ReportResult(): Unit = {
     println("** Printing results of the perf run (scala) **")
-    for(result <- perfResults.keys) {
-        val perfResult = perfResults(result)
-        //multiple enumeration happening - ignoring that for now
-        val min = perfResult.min
-        val max = perfResult.max
-        val runCount = perfResult.length
-        val avg = perfResult.sum / runCount
-        val median = getMedian(perfResult.toList)
-        val values = new StringBuilder
-        for (value <- perfResult) {
-          values.append(value + ", ")
-        }
-
-        println(s"** Execution time for $result in seconds. Min=$min, Max=$max, Average=$avg, Median=$median, Number of runs=$runCount, Individual execution duration=[$values] **")
-      }
+    for (result <- perfResults.keys) {
+      val perfResult = perfResults(result)
+      //multiple enumeration happening - ignoring that for now
+      val min = perfResult.min
+      val max = perfResult.max
+      val runCount = perfResult.length
+      val avg = perfResult.sum / runCount
+      val median = getMedian(perfResult.toList)
+      val values = perfResult.mkString(",")
+      println(s"** Execution time for $result in seconds. Min=$min, Max=$max, Average=$avg, Median=$median, Number of runs=$runCount, Individual execution duration=[$values] **")
+    }
     println("** *** **")
 
   }
@@ -80,11 +88,11 @@ object PerfBenchmark {
     if (itemCount == 1)
       values(0)
 
-    if (itemCount%2 == 0) {
-      (values(itemCount/2) + values(itemCount/2 - 1))/2
+    if (itemCount % 2 == 0) {
+      (values(itemCount / 2) + values(itemCount / 2 - 1)) / 2
     }
 
-    values((itemCount-1)/2)
+    values((itemCount - 1) / 2)
   }
 }
 
